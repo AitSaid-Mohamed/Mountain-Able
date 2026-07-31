@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+**/.env
+
+# Build output
+dist/
+build/
+**/dist/
+
+# Uploaded files (keep the folder, ignore its contents)
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Test / browser-automation output
+playwright-report/
+test-results/
+.playwright/
+puppeteer-*.log
+/screenshots-tmp/
+
+# Misc
+*.tsbuildinfo
+.cache/

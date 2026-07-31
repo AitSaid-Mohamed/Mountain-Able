@@ -1,0 +1,17 @@
+/* Inter (400/500/600/700) — self-hostable in production; loaded from Google
+   Fonts here for the development scaffold. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  /* Global defaults from the design system: cream background, ink text, Inter. */
+  body {
+    @apply bg-cream text-ink font-sans;
+  }
+}

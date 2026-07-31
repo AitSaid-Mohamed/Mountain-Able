@@ -1,0 +1,444 @@
+########################################################################
+# Mountain-Able API — manual test collection (VS Code "REST Client")
+# ---------------------------------------------------------------------
+# 1. Start MongoDB, then: npm run seed && npm run dev
+# 2. Install the "REST Client" extension (humao.rest-client)
+# 3. Run the four "LOGIN" requests first (top to bottom) so the tokens
+#    are captured, then click "Send Request" on any endpoint below.
+# All seeded accounts share the password: Password123!
+########################################################################
+
+@baseUrl = http://localhost:5000/api
+@password = Password123!
+
+### ---------------------------------------------------------------- AUTH
+
+# @name loginAdmin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "admin@mountainable.it", "password": "{{password}}" }
+
+###
+# @name loginOfficer
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "officer.aosta@mountainable.it", "password": "{{password}}" }
+
+###
+# @name loginTourist
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "sara@example.com", "password": "{{password}}" }
+
+###
+# @name loginAuthority
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "authority@mountainable.it", "password": "{{password}}" }
+
+###
+@adminToken = {{loginAdmin.response.body.data.token}}
+@officerToken = {{loginOfficer.response.body.data.token}}
+@touristToken = {{loginTourist.response.body.data.token}}
+@authorityToken = {{loginAuthority.response.body.data.token}}
+
+### Register a new tourist
+# @name register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{ "firstName": "New", "lastName": "Tourist", "email": "new.tourist@example.com", "password": "{{password}}", "city": "Torino" }
+
+### Current user
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{touristToken}}
+
+### Update own profile (JSON — text fields)
+PATCH {{baseUrl}}/auth/me
+Authorization: Bearer {{touristToken}}
+Content-Type: application/json
+
+{ "city": "Milano", "phone": "+39 340 0000000" }
+
+### Upload own avatar (multipart — adjust the file path to a real image on disk)
+PATCH {{baseUrl}}/auth/me
+Authorization: Bearer {{touristToken}}
+Content-Type: multipart/form-data; boundary=----boundary
+
+------boundary
+Content-Disposition: form-data; name="avatar"; filename="avatar.png"
+Content-Type: image/png
+
+< ./uploads/.gitkeep
+------boundary--
+
+### Health
+GET {{baseUrl}}/health
+
+### ----------------------------------------------------------- VILLAGES
+
+### List (default sort -rating, page 1, limit 9)
+GET {{baseUrl}}/villages
+
+### List with search + filters + sort + pagination
+GET {{baseUrl}}/villages?search=lake&minRating=3&sort=name&page=1&limit=5
+
+### Filter by region / province
+GET {{baseUrl}}/villages?region=Abruzzo
+
+### Filter by category (villages with an attraction in this category)
+GET {{baseUrl}}/villages?category=hiking
+
+### Admin: include unpublished villages
+GET {{baseUrl}}/villages?includeUnpublished=true
+Authorization: Bearer {{adminToken}}
+
+### Map payload (lightweight)
+GET {{baseUrl}}/villages/map
+
+### Detail by slug
+# @name villageDetail
+GET {{baseUrl}}/villages/scanno
+
+###
+@villageId = {{villageDetail.response.body.data._id}}
+
+### Create village (officer → own municipality)
+# @name createVillage
+POST {{baseUrl}}/villages
+Authorization: Bearer {{officerToken}}
+Content-Type: application/json
+
+{
+  "name": "Test Borgo Alpino",
+  "description": "A small test village high in the Aosta Valley, created via the API test file.",
+  "shortDescription": "A test village.",
+  "region": "Aosta Valley",
+  "province": "Aosta",
+  "location": { "lat": 45.72, "lng": 7.61 },
+  "altitude": 1500,
+  "population": 120
+}
+
+###
+@newVillageId = {{createVillage.response.body.data._id}}
+
+### Update village (owning officer)
+PATCH {{baseUrl}}/villages/{{newVillageId}}
+Authorization: Bearer {{officerToken}}
+Content-Type: application/json
+
+{ "population": 150, "shortDescription": "Updated description." }
+
+### Publish village (admin only)
+PATCH {{baseUrl}}/villages/{{newVillageId}}/publish
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "isPublished": true }
+
+### Upload images (multipart; adjust the file path to a real image on disk)
+POST {{baseUrl}}/villages/{{newVillageId}}/images
+Authorization: Bearer {{officerToken}}
+Content-Type: multipart/form-data; boundary=----boundary
+
+------boundary
+Content-Disposition: form-data; name="images"; filename="photo.png"
+Content-Type: image/png
+
+< ./uploads/.gitkeep
+------boundary--
+
+### Delete an image by index
+DELETE {{baseUrl}}/villages/{{newVillageId}}/images/0
+Authorization: Bearer {{officerToken}}
+
+### -------------------------------------------------------- ATTRACTIONS
+
+### List attractions for a village (public)
+GET {{baseUrl}}/villages/{{villageId}}/attractions
+
+### Filter attractions by category
+GET {{baseUrl}}/villages/{{villageId}}/attractions?category=nature
+
+### Categories (to grab a categoryId)
+# @name categories
+GET {{baseUrl}}/categories
+
+###
+@categoryId = {{categories.response.body.data.0._id}}
+
+### Create attraction (owning officer)
+# @name createAttraction
+POST {{baseUrl}}/villages/{{newVillageId}}/attractions
+Authorization: Bearer {{officerToken}}
+Content-Type: application/json
+
+{ "name": "Test Viewpoint", "categoryId": "{{categoryId}}", "description": "A scenic test viewpoint." }
+
+###
+@attractionId = {{createAttraction.response.body.data._id}}
+
+### Update attraction
+PATCH {{baseUrl}}/attractions/{{attractionId}}
+Authorization: Bearer {{officerToken}}
+Content-Type: application/json
+
+{ "name": "Renamed Viewpoint" }
+
+### Delete attraction
+DELETE {{baseUrl}}/attractions/{{attractionId}}
+Authorization: Bearer {{officerToken}}
+
+### -------------------------------------------------------------- EVENTS
+
+### Global events, upcoming only
+GET {{baseUrl}}/events?upcoming=true
+
+### Events filtered by region
+GET {{baseUrl}}/events?region=Abruzzo
+
+### Events for a village
+GET {{baseUrl}}/villages/{{villageId}}/events
+
+### Create event (owning officer)
+# @name createEvent
+POST {{baseUrl}}/villages/{{newVillageId}}/events
+Authorization: Bearer {{officerToken}}
+Content-Type: application/json
+
+{ "title": "Test Summer Fair", "description": "A test event.", "startDate": "2026-08-01", "endDate": "2026-08-03" }
+
+###
+@eventId = {{createEvent.response.body.data._id}}
+
+### Update event
+PATCH {{baseUrl}}/events/{{eventId}}
+Authorization: Bearer {{officerToken}}
+Content-Type: application/json
+
+{ "title": "Test Summer Fair (updated)" }
+
+### Delete event
+DELETE {{baseUrl}}/events/{{eventId}}
+Authorization: Bearer {{officerToken}}
+
+### ------------------------------------------------------------ COMMENTS
+
+### List approved comments for a village (public, paginated)
+GET {{baseUrl}}/villages/{{villageId}}/comments?page=1&limit=10
+
+### Post a comment (tourist) — one per user per village
+# @name createComment
+POST {{baseUrl}}/villages/{{newVillageId}}/comments
+Authorization: Bearer {{touristToken}}
+Content-Type: application/json
+
+{ "content": "Lovely little test village, worth the detour!", "rating": 5 }
+
+###
+@commentId = {{createComment.response.body.data._id}}
+
+### Edit own comment (within 24h)
+PATCH {{baseUrl}}/comments/{{commentId}}
+Authorization: Bearer {{touristToken}}
+Content-Type: application/json
+
+{ "rating": 4, "content": "Edited: still a lovely test village." }
+
+### Admin moderation queue
+GET {{baseUrl}}/comments/pending
+Authorization: Bearer {{adminToken}}
+
+### Moderate a comment (admin) — triggers rating recalculation
+PATCH {{baseUrl}}/comments/{{commentId}}/moderate
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "status": "approved" }
+
+### Delete a comment (author or admin)
+DELETE {{baseUrl}}/comments/{{commentId}}
+Authorization: Bearer {{touristToken}}
+
+### ------------------------------------------------------ MUNICIPALITIES
+
+### List
+# @name municipalities
+GET {{baseUrl}}/municipalities
+
+###
+@municipalityId = {{municipalities.response.body.data.0._id}}
+
+### Detail (with villages)
+GET {{baseUrl}}/municipalities/{{municipalityId}}
+
+### Create (admin)
+# @name createMunicipality
+POST {{baseUrl}}/municipalities
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "name": "Comune di Test", "region": "Piedmont", "province": "Cuneo", "contactEmail": "info@test.it" }
+
+###
+@createdMunicipalityId = {{createMunicipality.response.body.data._id}}
+
+### Update (admin)
+PATCH {{baseUrl}}/municipalities/{{createdMunicipalityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "phone": "+39 0171 000000" }
+
+### Delete (admin) — 409 if it still has villages
+DELETE {{baseUrl}}/municipalities/{{createdMunicipalityId}}
+Authorization: Bearer {{adminToken}}
+
+### -------------------------------------------------------- CATEGORIES
+
+### List
+GET {{baseUrl}}/categories
+
+### Create (admin)
+# @name createCategory
+POST {{baseUrl}}/categories
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "name": "Test Category", "icon": "Star" }
+
+###
+@createdCategoryId = {{createCategory.response.body.data._id}}
+
+### Update (admin)
+PATCH {{baseUrl}}/categories/{{createdCategoryId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "icon": "Sparkles" }
+
+### Delete (admin) — 409 if attractions reference it
+DELETE {{baseUrl}}/categories/{{createdCategoryId}}
+Authorization: Bearer {{adminToken}}
+
+### ------------------------------------------------------------- USERS
+
+### List users (admin), filter by role/status
+GET {{baseUrl}}/users?role=officer&status=active
+Authorization: Bearer {{adminToken}}
+
+### Get one user (admin) — grab an id from the list above
+# @name usersList
+GET {{baseUrl}}/users?role=tourist
+Authorization: Bearer {{adminToken}}
+
+###
+@someUserId = {{usersList.response.body.data.0._id}}
+
+### Get user by id
+GET {{baseUrl}}/users/{{someUserId}}
+Authorization: Bearer {{adminToken}}
+
+### Change user status (admin)
+PATCH {{baseUrl}}/users/{{someUserId}}/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "status": "active" }
+
+### Change user role (admin)
+PATCH {{baseUrl}}/users/{{someUserId}}/role
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "role": "tourist" }
+
+### Public officer account request (creates a pending officer + a request record)
+# @name officerRequest
+POST {{baseUrl}}/users/officer-request
+Content-Type: application/json
+
+{
+  "firstName": "Aspiring",
+  "lastName": "Officer",
+  "email": "aspiring.officer@example.com",
+  "password": "{{password}}",
+  "municipalityName": "Comune di Testville",
+  "region": "Piedmont",
+  "province": "Cuneo",
+  "message": "I manage tourism for our village and would like access."
+}
+
+### Delete a user (admin)
+# DELETE {{baseUrl}}/users/{{someUserId}}
+# Authorization: Bearer {{adminToken}}
+
+### ------------------------------------------------- OFFICER REQUESTS
+
+### List officer requests (admin), optional ?status=pending|approved|rejected
+# @name officerRequests
+GET {{baseUrl}}/officer-requests?status=pending
+Authorization: Bearer {{adminToken}}
+
+###
+@officerRequestId = {{officerRequest.response.body.data.request._id}}
+
+### Approve an officer request (admin) — activates the linked officer account
+PATCH {{baseUrl}}/officer-requests/{{officerRequestId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "status": "approved" }
+
+### Reject an officer request (admin) — suspends the linked officer account
+# PATCH {{baseUrl}}/officer-requests/{{officerRequestId}}
+# Authorization: Bearer {{adminToken}}
+# Content-Type: application/json
+#
+# { "status": "rejected" }
+
+### -------------------------------------------------------------- STATS
+
+### Overview (authority or admin)
+GET {{baseUrl}}/stats/overview
+Authorization: Bearer {{authorityToken}}
+
+### Per-region aggregates
+GET {{baseUrl}}/stats/regions
+Authorization: Bearer {{authorityToken}}
+
+### Top villages (min 3 ratings), optional ?region=
+GET {{baseUrl}}/stats/villages/top
+Authorization: Bearer {{authorityToken}}
+
+### Satisfaction distribution + monthly series
+GET {{baseUrl}}/stats/satisfaction
+Authorization: Bearer {{authorityToken}}
+
+### ------------------------------------------------- NEGATIVE / EDGE CASES
+
+### Tourist cannot create a village (403)
+POST {{baseUrl}}/villages
+Authorization: Bearer {{touristToken}}
+Content-Type: application/json
+
+{ "name": "Nope", "description": "x", "region": "r", "province": "p", "location": { "lat": 1, "lng": 1 } }
+
+### Validation error (422, field-keyed)
+POST {{baseUrl}}/villages
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "name": "" }
+
+### Unknown route (404)
+GET {{baseUrl}}/this-route-does-not-exist
+
+### Clean up the village created above (admin, cascade)
+DELETE {{baseUrl}}/villages/{{newVillageId}}
+Authorization: Bearer {{adminToken}}

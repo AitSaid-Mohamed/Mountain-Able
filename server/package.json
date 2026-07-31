@@ -1,0 +1,39 @@
+{
+  "name": "mountain-able-server",
+  "version": "1.0.0",
+  "description": "REST API for the Digital Platform for Enhancing Tourism in Italian Mountain Villages (Master Mountain-Able, Politecnico di Milano).",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "seed": "node src/seed/seed.js"
+  },
+  "keywords": [
+    "tourism",
+    "mountain-villages",
+    "express",
+    "mongodb",
+    "rest-api"
+  ],
+  "author": "Mohamed Ait Said",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^8.6.1",
+    "express-validator": "^7.2.0",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.6.0",
+    "morgan": "^1.10.0",
+    "multer": "^2.2.0",
+    "slugify": "^1.6.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
