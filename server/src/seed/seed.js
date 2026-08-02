@@ -251,9 +251,11 @@ async function seed() {
   const targetComments = 54;
   const commentsToInsert = allPairs.slice(0, targetComments).map((pair, i) => {
     const sample = pick(COMMENT_POOL, i);
-    // ~85% approved, ~8% pending, ~7% rejected → only approved affect ratings.
-    const r = Math.random();
-    const status = r < 0.85 ? 'approved' : r < 0.93 ? 'pending' : 'rejected';
+    // Exactly 6 pending and 4 rejected, the rest approved — only approved
+    // affect ratings. Fixed counts rather than probabilities so the admin
+    // moderation queue is never empty by chance after a reseed; the pairs were
+    // already shuffled above, so these still spread across villages and users.
+    const status = i < 6 ? 'pending' : i < 10 ? 'rejected' : 'approved';
     const createdAt = randomDateLast12Months();
     return {
       content: sample.content,
@@ -267,7 +269,7 @@ async function seed() {
   });
   // Disable auto-timestamps so the explicit createdAt values are preserved.
   await Comment.insertMany(commentsToInsert, { timestamps: false });
-  console.log(`💬 ${commentsToInsert.length} comments (unique user/village pairs, spread over 12 months).`);
+  console.log(`💬 ${commentsToInsert.length} comments (unique user/village pairs, spread over 12 months) — 6 pending, 4 rejected.`);
 
   // 6b. A couple of pending officer account requests for the admin queue.
   await OfficerRequest.insertMany([

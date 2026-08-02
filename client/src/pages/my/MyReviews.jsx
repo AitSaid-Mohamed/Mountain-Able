@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { MessageSquare, Pencil, Trash2 } from 'lucide-react';
+import { MessageSquare, Pencil, Trash2, Clock, EyeOff } from 'lucide-react';
 import Card from '../../components/ui/Card.jsx';
-import { Rating, Button, Modal, ConfirmDialog, Skeleton, EmptyState, ErrorState } from '../../components/ui/index.js';
+import { Rating, Button, Badge, Modal, ConfirmDialog, Skeleton, EmptyState, ErrorState } from '../../components/ui/index.js';
 import ReviewForm from '../../components/village/ReviewForm.jsx';
 import { useFetch } from '../../hooks/useFetch.js';
 import { useToast } from '../../context/ToastContext.jsx';
@@ -76,11 +76,24 @@ export default function MyReviews() {
                   {r.villageId.name}
                 </Link>
               ) : <span className="text-h3 text-ink">—</span>}
-              <div className="mt-1"><Rating value={r.rating} size={15} /></div>
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <Rating value={r.rating} size={15} />
+                {r.status === 'pending' && (
+                  <Badge tone="amber" icon={Clock}>{t('village.pendingBadge')}</Badge>
+                )}
+                {r.status === 'rejected' && (
+                  <Badge tone="neutral" icon={EyeOff}>{t('village.rejectedBadge')}</Badge>
+                )}
+              </div>
             </div>
             <span className="text-small text-ink/45">{formatDate(r.createdAt, i18n.language)}</span>
           </div>
           <p className="mt-3 text-body text-ink/80">{r.content}</p>
+          {r.status !== 'approved' && (
+            <p className="mt-2 text-small text-ink/60">
+              {t(r.status === 'pending' ? 'village.pendingNote' : 'village.rejectedNote')}
+            </p>
+          )}
           <div className="mt-3 flex items-center justify-end gap-2">
             {canEdit(r) ? (
               <Button size="sm" variant="ghost" onClick={() => setEditing(r)}><Pencil size={15} /> {t('common.edit')}</Button>

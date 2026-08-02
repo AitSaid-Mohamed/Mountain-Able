@@ -242,8 +242,18 @@ Whenever a comment is created, edited, deleted or moderated, the parent
 village's `ratingAverage` / `ratingCount` are recomputed automatically from
 **approved comments only** (model hooks — never in the controller).
 
+Reviews are **moderated before publication**: they are created as `pending` and
+become public only when an admin approves them. See
+`docs/design-decisions.md`.
+
 ### `GET /api/villages/:villageId/comments`
-Public. Approved only, newest first, paginated (`page`, `limit` default 10).
+Public, approved only, newest first, paginated (`page`, `limit` default 10).
+
+Optional auth: if a valid bearer token is supplied, the response *also*
+includes the caller's own review whatever its moderation status, so the author
+can see a review awaiting approval. Another user's unapproved review is never
+returned. Clients must therefore check `status` before treating a row as
+public.
 
 **200** with `meta`.
 
@@ -252,12 +262,19 @@ Role: `tourist`. One comment per user per village — enforced by a compound
 unique index `{ userId, villageId }` on the Comment collection (the DB is the
 source of truth); the controller returns a friendly `409` on top.
 
+Created with `status: "pending"`, so it does not appear publicly and does not
+affect `ratingAverage` until an admin approves it.
+
 Body: `{ "content", "rating" (integer 1–5) }`
 
 **201** created comment · **409** `{ "message": "You have already reviewed this village." }` · **422** invalid rating.
 
 ### `PATCH /api/comments/:id`
 Role: author only, within 24h of creation. Body: `{ "content"?, "rating"? }`.
+
+Editing content or rating resets `status` to `pending`, so the revised text is
+re-moderated — otherwise the gate could be bypassed by editing an
+already-approved review. The village rating is recalculated accordingly.
 
 **200** updated · **403** not author / edit window elapsed · **404**.
 
@@ -486,7 +503,7 @@ Platform totals + average rating.
 ```json
 { "success": true, "data": {
   "villages": 20, "municipalities": 10, "attractions": 87, "events": 48,
-  "tourists": 7, "comments": 54, "approvedComments": 46, "averageRating": 4.13 } }
+  "tourists": 7, "comments": 54, "approvedComments": 44, "averageRating": 4.23 } }
 ```
 
 ### `GET /api/stats/regions`

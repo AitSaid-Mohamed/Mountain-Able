@@ -26,12 +26,18 @@ export const authLimiter = rateLimit({
 
 /**
  * Tighter limiter for the routing endpoints, since each request may hit
- * third-party services (OSRM, Open-Meteo, Overpass, Nominatim): 30 requests
+ * third-party services (OSRM, Open-Meteo, Overpass, Nominatim): 60 requests
  * per 15 minutes per IP. Caching absorbs most repeat traffic beneath this.
+ *
+ * 60 rather than a tighter number because planning a single journey already
+ * costs three requests (geocode, plan, corridor), and changing travel profile
+ * or retrying a failed route costs more — a tighter cap throttles one genuine
+ * user. Still well under what would let a client hammer a provider through us,
+ * since only cache misses reach a third party at all.
  */
 export const routesLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 60,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: 'Too many route requests, please try again shortly.' },

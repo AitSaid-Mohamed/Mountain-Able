@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MessageSquare, Pencil, Trash2, LogIn } from 'lucide-react';
-import { Card, Rating, Button, EmptyState, Spinner, Pagination, ConfirmDialog } from '../ui/index.js';
+import { MessageSquare, Pencil, Trash2, LogIn, Clock, EyeOff } from 'lucide-react';
+import { Card, Rating, Button, Badge, EmptyState, Spinner, Pagination, ConfirmDialog } from '../ui/index.js';
 import ReviewForm from './ReviewForm.jsx';
 import { useFetch } from '../../hooks/useFetch.js';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -38,15 +38,21 @@ export default function ReviewsSection({ village, onRatingChange }) {
     [list, user]
   );
 
+  // The endpoint adds the caller's own review whatever its status, so the
+  // public list and the distribution are taken from the approved subset only —
+  // an unapproved review must not shift the breakdown it is not counted in.
+  // The author still sees their own in the "Your review" card above.
+  const approved = useMemo(() => list.filter((c) => c.status === 'approved'), [list]);
+
   const distribution = useMemo(() => {
     const buckets = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-    list.forEach((c) => { buckets[c.rating] = (buckets[c.rating] ?? 0) + 1; });
+    approved.forEach((c) => { buckets[c.rating] = (buckets[c.rating] ?? 0) + 1; });
     return buckets;
-  }, [list]);
+  }, [approved]);
 
-  const total = village.ratingCount ?? list.length;
-  const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
-  const pageItems = list.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const total = village.ratingCount ?? approved.length;
+  const totalPages = Math.max(1, Math.ceil(approved.length / PAGE_SIZE));
+  const pageItems = approved.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const afterChange = async (msg) => {
     setFeedback(msg);
@@ -109,7 +115,7 @@ export default function ReviewsSection({ village, onRatingChange }) {
           <div className="mt-5 space-y-1.5 text-left">
             {[5, 4, 3, 2, 1].map((star) => {
               const count = distribution[star] ?? 0;
-              const pct = list.length ? (count / list.length) * 100 : 0;
+              const pct = approved.length ? (count / approved.length) * 100 : 0;
               return (
                 <div key={star} className="flex items-center gap-2 text-small">
                   <span className="w-3 text-ink/60">{star}</span>
@@ -141,8 +147,16 @@ export default function ReviewsSection({ village, onRatingChange }) {
             </Card>
           ) : myReview ? (
             <Card className="mb-6 p-6">
-              <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-h3 text-ink">{t('village.yourReview')}</h3>
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-h3 text-ink">{t('village.yourReview')}</h3>
+                  {myReview.status === 'pending' && (
+                    <Badge tone="amber" icon={Clock}>{t('village.pendingBadge')}</Badge>
+                  )}
+                  {myReview.status === 'rejected' && (
+                    <Badge tone="neutral" icon={EyeOff}>{t('village.rejectedBadge')}</Badge>
+                  )}
+                </div>
                 {!editing && (
                   <div className="flex gap-2">
                     <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
@@ -166,6 +180,11 @@ export default function ReviewsSection({ village, onRatingChange }) {
                 <div>
                   <Rating value={myReview.rating} size={18} />
                   <p className="mt-2 text-body text-ink/80">{myReview.content}</p>
+                  {myReview.status !== 'approved' && (
+                    <p className="mt-3 text-small text-ink/60">
+                      {t(myReview.status === 'pending' ? 'village.pendingNote' : 'village.rejectedNote')}
+                    </p>
+                  )}
                 </div>
               )}
             </Card>
@@ -181,7 +200,7 @@ export default function ReviewsSection({ village, onRatingChange }) {
             <div className="flex justify-center py-10 text-ink/40">
               <Spinner size={24} />
             </div>
-          ) : list.length === 0 ? (
+          ) : approved.length === 0 ? (
             <EmptyState icon={MessageSquare} title={t('village.noReviewsYet')} />
           ) : (
             <>

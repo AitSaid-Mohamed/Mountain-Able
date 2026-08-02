@@ -8,7 +8,7 @@ import {
   moderateComment,
   listMyComments,
 } from '../controllers/commentController.js';
-import { protect, restrictTo } from '../middleware/auth.js';
+import { protect, restrictTo, optionalAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import {
   createCommentRules,
@@ -19,7 +19,8 @@ import {
 /** Nested under /api/villages/:villageId/comments. */
 export const commentNestedRouter = Router({ mergeParams: true });
 
-commentNestedRouter.get('/', listVillageComments);
+// optionalAuth so the author sees their own pending review; still public.
+commentNestedRouter.get('/', optionalAuth, listVillageComments);
 commentNestedRouter.post(
   '/',
   protect,

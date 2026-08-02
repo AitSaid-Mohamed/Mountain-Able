@@ -27,11 +27,15 @@ export function AuthProvider({ children }) {
       setUser(res.data.data.user);
       setAuthError(null);
     } catch (err) {
-      // Only a rejected/expired token (401) invalidates the session. If the
-      // server was simply unreachable (network error, restarting), keep the
-      // token so the session recovers once it comes back — don't log out, and
-      // record the error so the guard can offer a retry instead of a redirect.
-      if (isNetworkError(err)) {
+      // Only a rejected/expired token (401/403) invalidates the session. If the
+      // server was simply unreachable (network error, restarting) — or replied
+      // 429, or failed outright with a 5xx — keep the token so the session
+      // recovers, and record the error so the guard can offer a retry instead
+      // of a redirect. Treating any failure as a rejected token logs people out
+      // for reasons that have nothing to do with their credentials.
+      const status = err.response?.status;
+      const rejected = status === 401 || status === 403;
+      if (isNetworkError(err) || !rejected) {
         setAuthError(err);
       } else {
         localStorage.removeItem(TOKEN_KEY);

@@ -58,7 +58,13 @@ export function createApp() {
   // --- Rate limiting -------------------------------------------------------
   // Disabled under NODE_ENV=test so automated end-to-end runs aren't throttled.
   if (config.nodeEnv !== 'test') {
-    app.use('/api/auth', authLimiter); // stricter limit on authentication
+    // The strict limiter guards *credential submission* only. It must not
+    // cover GET /api/auth/me: that endpoint validates an existing session and
+    // fires on every page load, so a limiter sized for brute-force attempts
+    // (20 / 15 min) throttles ordinary browsing, and the client reads the
+    // resulting 429 as a rejected token and logs the user out.
+    app.use('/api/auth/login', authLimiter);
+    app.use('/api/auth/register', authLimiter);
     app.use('/api', generalLimiter); // 100 requests / 15 min per IP
   }
 

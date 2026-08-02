@@ -35,6 +35,11 @@ export const TTL = {
   route: 7 * 24 * 60 * 60 * 1000, // routes change rarely — 7 days
   elevation: 30 * 24 * 60 * 60 * 1000, // terrain is static — 30 days
   overpass: 24 * 60 * 60 * 1000, // POIs change slowly — 1 day
+  // A *failed* Overpass lookup is cached too, but briefly. Without this, a
+  // failure is retried on every request, and since a retry walks all mirrors
+  // at 20 s each the page stalls for up to a minute each time. Short, so a
+  // transient outage is not pinned for the full day of a success.
+  overpassFailure: 10 * 60 * 1000,
   geocode: 7 * 24 * 60 * 60 * 1000,
 };
 

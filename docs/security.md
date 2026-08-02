@@ -33,7 +33,7 @@ a single host.
 | Mass-assignment control | Explicit field allow-lists (`utils/pick.js`) on every write | Setting `role`, `isPublished`, `ratingAverage`, `userId`, … from the request body |
 | Input validation | `express-validator` chains → HTTP 422 with field errors | Malformed/out-of-range input reaching the models |
 | NoSQL-injection sanitisation | `express-mongo-sanitize` (runs before all routes; covers body, query, params) | MongoDB operator injection (`{"$gt":""}`) |
-| Rate limiting | Per-IP general (100/15 min), auth (20/15 min), routes (20/15 min); plus per-account lockout | Brute force, credential stuffing, DoS of proxied services |
+| Rate limiting | Per-IP general (100/15 min), login/register (20/15 min), routes (60/15 min); plus per-account lockout | Brute force, credential stuffing, DoS of proxied services |
 | Upload safety | Declared-MIME filter **and** magic-byte verification; server-generated filenames; hardened static headers | Stored XSS via SVG/HTML, spoofed content type, path traversal |
 | Outbound-request safety | Coordinate bounds validation, fixed provider hosts, geometry-size cap, explicit timeouts | SSRF, DoS against us and against third parties |
 | Error handling | Centralised handler; stack traces only in development | Information disclosure |
@@ -119,6 +119,17 @@ with a clear `429` message; a successful login resets the counters. This is
 independent of, and additional to, the per-IP limiter. Verified: the sixth
 attempt (even with the correct password) is rejected with `429`.
 
+*Follow-up.* The strict limiter was originally mounted on the whole `/api/auth`
+surface, which included `GET /api/auth/me`. That endpoint validates an existing
+session and runs on every page load, so a limit sized for brute-force attempts
+(20 / 15 min) throttled ordinary browsing — and because the client treated any
+non-network failure as a rejected token, the resulting `429` silently logged the
+user out after roughly twenty page views. The limiter is now mounted on
+`/api/auth/login` and `/api/auth/register` only, which is where credentials are
+actually submitted, and the client invalidates a session on `401`/`403` alone.
+Brute-force protection is unchanged; the general limiter and the per-account
+lockout still cover everything else.
+
 ### 3.6 External-service proxy hardening — **Medium**
 
 *Finding.* The routing endpoints turn the server into an HTTP client acting on
@@ -137,9 +148,15 @@ user input.
 - **Timeouts.** Every outbound call has an explicit `AbortController` timeout
   (routing 15 s, Overpass 20 s per mirror, Nominatim 10 s), so a hanging
   provider cannot exhaust the server.
-- **Dedicated rate limit.** `/api/routes/*` is limited to 20 requests / 15 min
-  per IP, separate from and tighter than the general limiter, because these
-  endpoints consume a third party's free service.
+- **Dedicated rate limit.** `/api/routes/*` has its own limiter, separate from
+  the general one, because these endpoints consume a third party's free
+  service. It is set to 60 requests / 15 min per IP. The figure is a balance,
+  not a maximum-strictness choice: planning one journey already costs three
+  requests (geocode, plan, corridor), and switching travel profile or retrying
+  a failed route costs more, so a tighter cap penalises a single genuine user
+  before it inconveniences an abuser. The real protection here is the cache —
+  only a miss reaches a provider, so repeat traffic is absorbed below this
+  limit entirely.
 
 ### 3.7 Upload safety — **Medium**
 

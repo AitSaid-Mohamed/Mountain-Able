@@ -70,7 +70,9 @@ function classify(tags = {}) {
 async function overpassRun(query) {
   const key = `overpass:${createHash('sha1').update(query).digest('hex')}`;
   const cached = cacheGet(key);
-  if (cached) return cached;
+  // `!== undefined` rather than a truthiness test: `null` is a cached failure
+  // and must short-circuit, otherwise every request retries a dead mirror set.
+  if (cached !== undefined) return cached;
 
   for (const ep of OVERPASS_ENDPOINTS) {
     const controller = new AbortController();
@@ -92,7 +94,11 @@ async function overpassRun(query) {
       // try the next mirror
     }
   }
-  return null; // all mirrors failed — caller degrades gracefully
+  // All mirrors failed — caller degrades gracefully. Remember the failure for
+  // a short while so the next request degrades *immediately* instead of
+  // repeating a minute of timeouts; TTL.overpassFailure keeps it from
+  // outlasting the outage by much.
+  return cacheSet(key, null, TTL.overpassFailure);
 }
 
 const CORRIDOR_KM = 2; // POIs within ~2 km of the route polyline
