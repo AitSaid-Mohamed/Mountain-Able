@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage.jsx';
 import VillagesPage from './pages/VillagesPage.jsx';
 import VillageDetailPage from './pages/VillageDetailPage.jsx';
 import RoutePlannerPage from './pages/RoutePlannerPage.jsx';
+import PlanJourneyPage from './pages/PlanJourneyPage.jsx';
 import EventsPage from './pages/EventsPage.jsx';
 import AboutPage from './pages/AboutPage.jsx';
 import SignupPage from './pages/SignupPage.jsx';
@@ -55,6 +56,7 @@ export default function App() {
         <Route path="villages" element={<VillagesPage />} />
         <Route path="villages/:slug" element={<VillageDetailPage />} />
         <Route path="villages/:slug/route" element={<RoutePlannerPage />} />
+        <Route path="plan" element={<PlanJourneyPage />} />
         <Route path="events" element={<EventsPage />} />
         <Route path="about" element={<AboutPage />} />
         <Route path="signup" element={<SignupPage />} />

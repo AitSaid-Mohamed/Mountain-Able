@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { MapPin } from 'lucide-react';
+import { MapPin, Route } from 'lucide-react';
 import { Rating } from '../ui/index.js';
 import { cn, onImageError, FALLBACK_IMAGE, mediaUrl } from '../../lib/utils.js';
 
@@ -77,7 +77,15 @@ export default function VillageCard({ village, onMouseEnter, onMouseLeave, class
           {village.shortDescription || village.description}
         </p>
 
-        <div className="mt-4 flex justify-end pt-2">
+        <div className="mt-4 flex items-center justify-end gap-2 pt-2">
+          <Link
+            to={`/villages/${village.slug}/route`}
+            title={t('villages.planRoute')}
+            aria-label={`${t('villages.planRoute')} — ${village.name}`}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-pill border border-primary text-primary transition hover:bg-primary/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          >
+            <Route size={17} aria-hidden="true" />
+          </Link>
           <Link
             to={`/villages/${village.slug}`}
             className="inline-flex items-center rounded-pill bg-cta px-5 py-2 text-small font-semibold text-white transition hover:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-cta/50"

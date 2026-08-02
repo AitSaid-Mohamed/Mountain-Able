@@ -1,7 +1,8 @@
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import * as Icons from 'lucide-react';
-import { MapPin, Building2, Sparkles, CalendarDays, MessageSquare } from 'lucide-react';
-import { Card } from '../ui/index.js';
+import { MapPin, Building2, Sparkles, CalendarDays, MessageSquare, Route } from 'lucide-react';
+import { Card, Button } from '../ui/index.js';
 import DetailMap from './DetailMap.jsx';
 import { formatDate } from '../../lib/utils.js';
 
@@ -43,6 +44,17 @@ export default function VillageSidebar({ village, attractions = [], events = [] 
 
   return (
     <div className="space-y-5">
+      {/* Primary route-planning entry point — prominent and above the fold. */}
+      <Button
+        as={Link}
+        to={`/villages/${village.slug}/route`}
+        variant="brand"
+        size="lg"
+        className="w-full"
+      >
+        <Route size={20} aria-hidden="true" /> {t('village.planJourney')}
+      </Button>
+
       <Card className="h-[220px] overflow-hidden p-0">
         <DetailMap location={village.location} name={village.name} className="h-full" />
       </Card>

@@ -26,6 +26,7 @@
     "home": "Home",
     "villages": "Borghi",
     "events": "Eventi",
+    "planJourney": "Pianifica un viaggio",
     "about": "Chi siamo",
     "login": "Accedi",
     "signup": "Registrati",
@@ -63,6 +64,15 @@
     "aboutBody": "Mountain-Able è una piattaforma condivisa dove i piccoli comuni italiani pubblicano e mantengono aggiornate le informazioni turistiche dei loro borghi — attrazioni, eventi, tradizioni e dettagli pratici — e dove i viaggiatori scoprono luoghi che raramente compaiono sulle mappe più note. Centralizzando informazioni affidabili e recensioni della comunità, aiutiamo i borghi meno conosciuti a farsi conoscere, offrendo ai visitatori un modo più ricco e responsabile di esplorare.",
     "aboutBody2Heading": "Un viaggio che restituisce",
     "aboutBody2": "Ogni visita a un borgo montano sostiene famiglie, artigiani e tradizioni locali. Mettiamo in evidenza eventi, cibo e mestieri che tengono vive queste comunità, così il tuo viaggio va a beneficio diretto dei luoghi che scopri — non solo delle mete già affollate.",
+    "routeHeading": "Come arrivarci",
+    "routeLead": "Metà della sfida di un borgo montano è raggiungerlo.",
+    "routeBody": "Strade tortuose, salite ripide e lunghe distanze scoraggiano molti viaggiatori prima ancora di partire. Il nostro pianificatore traccia il percorso verso qualsiasi borgo, mostra il terreno e il dislivello da affrontare e segnala carburante, cibo, acqua e punti panoramici lungo la strada — così puoi pianificare il viaggio, non solo la meta.",
+    "routeCta": "Pianifica un viaggio",
+    "routePoint": {
+      "terrain": "Guarda la salita prima di affrontarla — profilo altimetrico completo, dislivello totale e i tratti più ripidi.",
+      "services": "Sai dove trovare carburante, cibo, acqua e soste lungo una strada che potrebbe averne poche.",
+      "discover": "Scopri altri borghi che incontrerai lungo il percorso e trasforma un viaggio in più tappe."
+    },
     "faqHeading": "Domande frequenti",
     "faq": {
       "q1": "Che cos'è Mountain-Able?",
@@ -105,7 +115,17 @@
       "newest": "Più recenti"
     },
     "prevPage": "Pagina precedente",
-    "nextPage": "Pagina successiva"
+    "nextPage": "Pagina successiva",
+    "planRoute": "Pianifica un percorso"
+  },
+  "plan": {
+    "title": "Pianifica un viaggio",
+    "subtitle": "I borghi montani sono difficili da raggiungere. Scegli una destinazione e ti mostreremo la strada, il terreno e cosa troverai lungo il percorso.",
+    "searchLabel": "Dove vuoi andare?",
+    "searchPlaceholder": "Cerca un borgo per nome…",
+    "choosePrompt": "Inizia a scrivere il nome di un borgo per scegliere la destinazione.",
+    "noResults": "Nessun borgo corrisponde a quel nome.",
+    "continue": "Calcola percorso"
   },
   "card": {
     "reviewsCount_one": "{{count}} recensione",

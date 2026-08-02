@@ -26,6 +26,7 @@
     "home": "Home",
     "villages": "Villages",
     "events": "Events",
+    "planJourney": "Plan a journey",
     "about": "About",
     "login": "Login",
     "signup": "Sign up",
@@ -63,6 +64,15 @@
     "aboutBody": "Mountain-Able is a shared platform where small Italian municipalities publish and keep up to date the tourism information of their villages — attractions, events, traditions and practical details — and where travellers discover places that rarely appear on the usual maps. By centralising trustworthy information and community reviews, we help underrepresented villages gain visibility while giving visitors a richer, more responsible way to explore.",
     "aboutBody2Heading": "Travel that gives back",
     "aboutBody2": "Every visit to a mountain village supports local families, artisans and traditions. We surface the events, food and crafts that keep these communities alive, so your journey directly benefits the places you discover — not just the crowded destinations everyone already knows.",
+    "routeHeading": "Getting there",
+    "routeLead": "Half the challenge of a mountain village is reaching it.",
+    "routeBody": "Winding roads, steep climbs and long distances put many travellers off before they start. Our journey planner maps the route to any village, shows the terrain and elevation you'll climb, and points out the fuel, food, water and viewpoints along the way — so you can plan the drive, not just the destination.",
+    "routeCta": "Plan a journey",
+    "routePoint": {
+      "terrain": "See the climb before you drive it — full elevation profile, total ascent and the steepest sections.",
+      "services": "Know where the fuel, food, water and rest stops are along a road that may have few.",
+      "discover": "Discover other villages you'll pass close to, and turn one trip into several."
+    },
     "faqHeading": "Frequently asked questions",
     "faq": {
       "q1": "What is Mountain-Able?",
@@ -105,7 +115,17 @@
       "newest": "Newest"
     },
     "prevPage": "Previous page",
-    "nextPage": "Next page"
+    "nextPage": "Next page",
+    "planRoute": "Plan a route here"
+  },
+  "plan": {
+    "title": "Plan a journey",
+    "subtitle": "Mountain villages are hard to reach. Choose a destination and we'll map the way there, the terrain, and what you'll find along the road.",
+    "searchLabel": "Where do you want to go?",
+    "searchPlaceholder": "Search a village by name…",
+    "choosePrompt": "Start typing a village name to choose your destination.",
+    "noResults": "No villages match that name.",
+    "continue": "Plan route"
   },
   "card": {
     "reviewsCount_one": "{{count}} review",

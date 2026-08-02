@@ -1,6 +1,7 @@
 import { useFetch } from '../hooks/useFetch.js';
 import Hero from '../components/home/Hero.jsx';
 import MostPopular from '../components/home/MostPopular.jsx';
+import RouteFeature from '../components/home/RouteFeature.jsx';
 import AboutSection from '../components/home/AboutSection.jsx';
 import Faq from '../components/home/Faq.jsx';
 
@@ -15,6 +16,7 @@ export default function HomePage() {
     <>
       <Hero villages={villages} loading={loading} />
       <MostPopular villages={villages} loading={loading} error={error} onRetry={refetch} />
+      <RouteFeature />
       <AboutSection />
       <Faq />
     </>

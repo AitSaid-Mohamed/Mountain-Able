@@ -14,6 +14,7 @@ import { cn } from '../../lib/utils.js';
 const NAV = [
   { to: '/', key: 'home', end: true },
   { to: '/villages', key: 'villages' },
+  { to: '/plan', key: 'planJourney' },
   { to: '/events', key: 'events' },
   { to: '/about', key: 'about' },
 ];
