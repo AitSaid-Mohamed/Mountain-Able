@@ -8,6 +8,7 @@ import catchAsync from '../utils/catchAsync.js';
 import { sendSuccess } from '../utils/apiResponse.js';
 import { buildMeta } from '../utils/pagination.js';
 import { generateUniqueSlug } from '../utils/slug.js';
+import { pick } from '../utils/pick.js';
 import APIFeatures from '../utils/APIFeatures.js';
 
 /** Public `sort` value → Mongo sort string. */
@@ -125,11 +126,19 @@ export const getVillageBySlug = catchAsync(async (req, res, next) => {
  * Officers always create within their own municipality regardless of body.
  */
 export const createVillage = catchAsync(async (req, res, next) => {
-  const payload = { ...req.body };
+  // Explicit allow-list: a client can never set isPublished, ratingAverage or
+  // ratingCount — publication is admin-only and ratings are derived from
+  // approved comments.
+  const payload = pick(req.body, [
+    'name', 'description', 'shortDescription', 'region', 'province',
+    'location', 'altitude', 'population', 'images', 'coverImage', 'stats',
+  ]);
 
   if (req.user.role === 'officer') {
     payload.municipalityId = req.user.municipalityId;
-  } else if (!payload.municipalityId) {
+  } else if (req.body.municipalityId) {
+    payload.municipalityId = req.body.municipalityId;
+  } else {
     return next(new AppError('municipalityId is required.', 422, { municipalityId: 'Required.' }));
   }
 
@@ -144,11 +153,15 @@ export const createVillage = catchAsync(async (req, res, next) => {
  * `req.village` is provided by the middleware.
  */
 export const updateVillage = catchAsync(async (req, res) => {
-  const updates = { ...req.body };
-  // Officers can never move a village to another municipality.
-  if (req.user.role === 'officer') delete updates.municipalityId;
-  // Publishing is a separate admin-only endpoint.
-  delete updates.isPublished;
+  // Explicit allow-list: isPublished, ratingAverage and ratingCount are never
+  // client-settable here (publish is admin-only; ratings are derived).
+  const allowed = [
+    'name', 'description', 'shortDescription', 'region', 'province',
+    'location', 'altitude', 'population', 'images', 'coverImage', 'stats',
+  ];
+  // Only an admin may reassign a village's municipality.
+  if (req.user.role === 'admin') allowed.push('municipalityId');
+  const updates = pick(req.body, allowed);
   if (updates.name && updates.name !== req.village.name) {
     updates.slug = await generateUniqueSlug(Village, updates.name, req.village._id);
   }

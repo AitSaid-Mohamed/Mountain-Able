@@ -41,8 +41,19 @@ export function createApp() {
 
   if (config.nodeEnv !== 'test') app.use(morgan('dev'));
 
-  // Serve locally uploaded images (multer target) as static files.
-  app.use('/uploads', express.static(path.join(__dirname, '..', config.uploadDir)));
+  // Serve locally uploaded images (multer target) as static files. Defence in
+  // depth: even though only magic-byte-verified images are stored, force
+  // no-sniff and a null CSP so a served file can never be interpreted as HTML
+  // or execute script in the browser.
+  app.use(
+    '/uploads',
+    express.static(path.join(__dirname, '..', config.uploadDir), {
+      setHeaders: (res) => {
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.setHeader('Content-Security-Policy', "default-src 'none'");
+      },
+    })
+  );
 
   // --- Rate limiting -------------------------------------------------------
   // Disabled under NODE_ENV=test so automated end-to-end runs aren't throttled.

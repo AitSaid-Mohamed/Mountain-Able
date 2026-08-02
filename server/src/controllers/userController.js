@@ -31,11 +31,13 @@ export const getUser = catchAsync(async (req, res, next) => {
 
 /** PATCH /api/users/:id/status — admin activates or suspends an account. */
 export const updateUserStatus = catchAsync(async (req, res, next) => {
-  const user = await User.findByIdAndUpdate(
-    req.params.id,
-    { status: req.body.status },
-    { new: true, runValidators: true }
-  );
+  const update = { status: req.body.status };
+  // Suspending must immediately invalidate the user's existing tokens.
+  if (req.body.status === 'suspended') update.$inc = { tokenVersion: 1 };
+  const user = await User.findByIdAndUpdate(req.params.id, update, {
+    new: true,
+    runValidators: true,
+  });
   if (!user) return next(new AppError('User not found.', 404));
   sendSuccess(res, user);
 });

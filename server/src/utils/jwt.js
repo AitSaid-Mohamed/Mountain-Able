@@ -2,13 +2,15 @@ import jwt from 'jsonwebtoken';
 import config from '../config/env.js';
 
 /**
- * Sign a JWT access token for a user id.
+ * Sign a JWT access token for a user id, embedding the user's current
+ * `tokenVersion` so the token can be invalidated server-side by bumping it.
  *
  * @param {string} userId  the Mongo ObjectId (as string) of the user
+ * @param {number} [tokenVersion=0]
  * @returns {string} a signed JWT
  */
-export function signToken(userId) {
-  return jwt.sign({ sub: userId }, config.jwtSecret, {
+export function signToken(userId, tokenVersion = 0) {
+  return jwt.sign({ sub: userId, tv: tokenVersion }, config.jwtSecret, {
     expiresIn: config.jwtExpiresIn,
   });
 }

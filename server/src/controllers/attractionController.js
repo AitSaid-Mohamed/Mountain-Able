@@ -3,6 +3,7 @@ import Category from '../models/Category.js';
 import AppError from '../utils/AppError.js';
 import catchAsync from '../utils/catchAsync.js';
 import { sendSuccess } from '../utils/apiResponse.js';
+import { pick } from '../utils/pick.js';
 
 /**
  * GET /api/villages/:villageId/attractions — public list for a village.
@@ -28,14 +29,16 @@ export const listVillageAttractions = catchAsync(async (req, res) => {
  * `req.village` is provided by the `ownsVillage` middleware.
  */
 export const createAttraction = catchAsync(async (req, res) => {
-  const attraction = await Attraction.create({ ...req.body, villageId: req.village._id });
+  const payload = pick(req.body, ['name', 'description', 'categoryId', 'images', 'location']);
+  payload.villageId = req.village._id; // ownership-scoped, never client-set
+  const attraction = await Attraction.create(payload);
   sendSuccess(res, attraction, undefined, 201);
 });
 
 /** PATCH /api/attractions/:id — update (ownership via `ownsResource`). */
 export const updateAttraction = catchAsync(async (req, res) => {
-  const updates = { ...req.body };
-  delete updates.villageId; // never reparent an attraction
+  // Allow-list: villageId is not settable, so an attraction cannot be reparented.
+  const updates = pick(req.body, ['name', 'description', 'categoryId', 'images', 'location']);
   const attraction = await Attraction.findByIdAndUpdate(req.resource._id, updates, {
     new: true,
     runValidators: true,

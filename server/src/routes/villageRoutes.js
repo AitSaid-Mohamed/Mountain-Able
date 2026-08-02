@@ -13,7 +13,7 @@ import {
 import { protect, restrictTo, requireActive, optionalAuth } from '../middleware/auth.js';
 import { ownsVillage } from '../middleware/ownsVillage.js';
 import { validate } from '../middleware/validate.js';
-import { upload } from '../middleware/upload.js';
+import { upload, verifyImageBytes } from '../middleware/upload.js';
 import {
   createVillageRules,
   updateVillageRules,
@@ -77,6 +77,7 @@ router.post(
   requireActive,
   ownsVillage,
   upload.array('images', 8),
+  verifyImageBytes,
   uploadVillageImages
 );
 router.delete(

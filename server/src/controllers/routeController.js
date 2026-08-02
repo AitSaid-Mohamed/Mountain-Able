@@ -9,6 +9,11 @@ import { corridorData, geocode as osmGeocode, OSM_ATTRIBUTION } from '../service
 import { buildTerrainAdvisories, buildSurfaceAdvisories } from '../services/advisories.js';
 
 const CORRIDOR_KM = 8; // platform villages within 8 km of the route
+const MAX_CORRIDOR_POINTS = 300; // cap on user-supplied geometry (DoS guard)
+
+/** True when lat/lng are finite numbers within valid WGS84 bounds. */
+const validCoord = (lat, lng) =>
+  Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
 
 const haversineKm = (a, b) => {
   const R = 6371;
@@ -94,8 +99,14 @@ async function platformAlongRoute(geometry, excludeVillageId, date) {
  */
 export const plan = catchAsync(async (req, res, next) => {
   const { start, villageId, profile = 'driving-car', date } = req.body;
-  if (!start || !Number.isFinite(start.lat) || !Number.isFinite(start.lng)) {
+  // Validate coordinates as in-bounds numbers before they reach any outbound
+  // URL — the coordinates are the only user input that touches the provider.
+  if (!start || !validCoord(start.lat, start.lng)) {
     return next(new AppError('A valid start location is required.', 422, { start: 'Required.' }));
+  }
+  const ALLOWED_PROFILES = ['driving-car', 'cycling-regular', 'foot-walking'];
+  if (!ALLOWED_PROFILES.includes(profile)) {
+    return next(new AppError('Invalid travel profile.', 422, { profile: 'Invalid.' }));
   }
   const village = await Village.findById(villageId).select('name slug region province location coverImage municipalityId').populate('municipalityId', 'name');
   if (!village) return next(new AppError('Village not found.', 404));
@@ -149,11 +160,18 @@ export const plan = catchAsync(async (req, res, next) => {
  */
 export const corridor = catchAsync(async (req, res, next) => {
   const raw = req.query.geometry;
-  if (!raw) return next(new AppError('A route geometry is required.', 422, { geometry: 'Required.' }));
-  const geometry = raw
-    .split(';')
+  if (!raw || typeof raw !== 'string') {
+    return next(new AppError('A route geometry is required.', 422, { geometry: 'Required.' }));
+  }
+  // Cap the polyline: an unbounded query string is a DoS vector against us and
+  // against Overpass. Reject rather than silently truncate.
+  const pairs = raw.split(';');
+  if (pairs.length > MAX_CORRIDOR_POINTS) {
+    return next(new AppError(`Route geometry is too long (max ${MAX_CORRIDOR_POINTS} points).`, 422));
+  }
+  const geometry = pairs
     .map((pair) => pair.split(',').map(Number))
-    .filter((c) => c.length === 2 && Number.isFinite(c[0]) && Number.isFinite(c[1]));
+    .filter((c) => c.length === 2 && validCoord(c[1], c[0])); // [lng, lat]
   if (geometry.length < 2) return next(new AppError('Invalid route geometry.', 422));
 
   const types = req.query.types ? req.query.types.split(',').map((s) => s.trim()).filter(Boolean) : null;

@@ -20,15 +20,17 @@ export const getMunicipality = catchAsync(async (req, res, next) => {
   sendSuccess(res, { ...municipality.toJSON(), villages });
 });
 
+const MUNI_FIELDS = ['name', 'region', 'province', 'contactEmail', 'phone'];
+
 /** POST /api/municipalities — admin. */
 export const createMunicipality = catchAsync(async (req, res) => {
-  const municipality = await Municipality.create(req.body);
+  const municipality = await Municipality.create(pick(req.body, MUNI_FIELDS));
   sendSuccess(res, municipality, undefined, 201);
 });
 
 /** PATCH /api/municipalities/:id — admin. */
 export const updateMunicipality = catchAsync(async (req, res, next) => {
-  const municipality = await Municipality.findByIdAndUpdate(req.params.id, req.body, {
+  const municipality = await Municipality.findByIdAndUpdate(req.params.id, pick(req.body, MUNI_FIELDS), {
     new: true,
     runValidators: true,
   });

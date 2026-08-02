@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../lib/api.js';
+import { cachedGet, invalidate } from '../lib/requestCache.js';
 import { useAuth } from './AuthContext.jsx';
 import { useToast } from './ToastContext.jsx';
 
@@ -29,9 +30,9 @@ export function MeProvider({ children }) {
     }
     setLoading(true); setError(null);
     try {
-      const [f, v] = await Promise.all([api.get('/me/favorites'), api.get('/me/visited')]);
-      setFavorites(f.data.data);
-      setVisited(v.data.data);
+      const [f, v] = await Promise.all([cachedGet('/me/favorites'), cachedGet('/me/visited')]);
+      setFavorites(f.data);
+      setVisited(v.data);
     } catch (e) {
       setError(e);
     } finally {
@@ -50,6 +51,7 @@ export function MeProvider({ children }) {
     try {
       const r = await api.post('/me/favorites', { villageId: village._id });
       setFavorites((prev) => prev.map((f) => (f._id === temp._id ? r.data.data : f)));
+      invalidate('/me/favorites'); invalidate('/me/stats');
     } catch (e) {
       setFavorites((prev) => prev.filter((f) => f._id !== temp._id));
       toast.error(e.response?.data?.message ?? 'Could not save favourite.');
@@ -61,6 +63,7 @@ export function MeProvider({ children }) {
     setFavorites((prev) => { snapshot = prev; return prev.filter((f) => f._id !== recordId); });
     try {
       await api.delete(`/me/favorites/${recordId}`);
+      invalidate('/me/favorites'); invalidate('/me/stats');
     } catch (e) {
       setFavorites(snapshot);
       toast.error(e.response?.data?.message ?? 'Could not remove favourite.');
@@ -78,6 +81,7 @@ export function MeProvider({ children }) {
     try {
       const r = await api.post('/me/visited', { villageId: village._id, visitedAt, note });
       setVisited((prev) => prev.map((v) => (v._id === temp._id ? r.data.data : v)).sort(byVisitDesc));
+      invalidate('/me/visited'); invalidate('/me/stats');
     } catch (e) {
       setVisited((prev) => prev.filter((v) => v._id !== temp._id));
       toast.error(e.response?.data?.message ?? 'Could not save visit.');
@@ -91,6 +95,7 @@ export function MeProvider({ children }) {
     try {
       const r = await api.patch(`/me/visited/${recordId}`, patch);
       setVisited((prev) => prev.map((v) => (v._id === recordId ? r.data.data : v)).sort(byVisitDesc));
+      invalidate('/me/visited'); invalidate('/me/stats');
     } catch (e) {
       setVisited(snapshot);
       toast.error(e.response?.data?.message ?? 'Could not update visit.');
@@ -102,6 +107,7 @@ export function MeProvider({ children }) {
     setVisited((prev) => { snapshot = prev; return prev.filter((v) => v._id !== recordId); });
     try {
       await api.delete(`/me/visited/${recordId}`);
+      invalidate('/me/visited'); invalidate('/me/stats');
     } catch (e) {
       setVisited(snapshot);
       toast.error(e.response?.data?.message ?? 'Could not remove visit.');

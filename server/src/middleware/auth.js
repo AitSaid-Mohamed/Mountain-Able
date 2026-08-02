@@ -24,9 +24,14 @@ export const protect = catchAsync(async (req, _res, next) => {
     return next(new AppError('Invalid or expired token.', 401));
   }
 
-  const user = await User.findById(decoded.sub);
+  const user = await User.findById(decoded.sub).select('+tokenVersion');
   if (!user) {
     return next(new AppError('The user for this token no longer exists.', 401));
+  }
+  // Token revocation: a token minted before the user's tokenVersion was bumped
+  // (password change, suspension) is no longer valid.
+  if ((decoded.tv ?? 0) !== (user.tokenVersion ?? 0)) {
+    return next(new AppError('Your session has expired. Please log in again.', 401));
   }
   if (user.status === 'suspended') {
     return next(new AppError('Your account has been suspended.', 403));
@@ -49,8 +54,10 @@ export const optionalAuth = catchAsync(async (req, _res, next) => {
 
   try {
     const decoded = verifyToken(token);
-    const user = await User.findById(decoded.sub);
-    if (user && user.status !== 'suspended') req.user = user;
+    const user = await User.findById(decoded.sub).select('+tokenVersion');
+    if (user && user.status !== 'suspended' && (decoded.tv ?? 0) === (user.tokenVersion ?? 0)) {
+      req.user = user;
+    }
   } catch {
     // Ignore invalid tokens on optional-auth routes.
   }

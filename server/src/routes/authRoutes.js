@@ -3,7 +3,8 @@ import { body } from 'express-validator';
 import { register, login, getMe, updateMe } from '../controllers/authController.js';
 import { protect } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
-import { upload } from '../middleware/upload.js';
+import { upload, verifyImageBytes } from '../middleware/upload.js';
+import { passwordRule } from '../middleware/validators/passwordRule.js';
 
 const router = Router();
 
@@ -12,7 +13,7 @@ const registerRules = [
   body('firstName').trim().notEmpty().withMessage('First name is required.'),
   body('lastName').trim().notEmpty().withMessage('Last name is required.'),
   body('email').isEmail().withMessage('A valid email is required.').normalizeEmail(),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters.'),
+  passwordRule,
 ];
 
 const loginRules = [
@@ -32,6 +33,6 @@ router.post('/login', loginRules, validate, login);
 router.get('/me', protect, getMe);
 // `upload.single('avatar')` runs before validation so multipart text fields
 // are parsed into req.body. It also accepts plain JSON requests (no file).
-router.patch('/me', protect, upload.single('avatar'), updateMeRules, validate, updateMe);
+router.patch('/me', protect, upload.single('avatar'), verifyImageBytes, updateMeRules, validate, updateMe);
 
 export default router;

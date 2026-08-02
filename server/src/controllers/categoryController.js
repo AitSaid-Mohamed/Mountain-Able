@@ -4,6 +4,7 @@ import AppError from '../utils/AppError.js';
 import catchAsync from '../utils/catchAsync.js';
 import { sendSuccess } from '../utils/apiResponse.js';
 import { generateUniqueSlug } from '../utils/slug.js';
+import { pick } from '../utils/pick.js';
 
 /** GET /api/categories — public list. */
 export const listCategories = catchAsync(async (_req, res) => {
@@ -13,14 +14,15 @@ export const listCategories = catchAsync(async (_req, res) => {
 
 /** POST /api/categories — admin. */
 export const createCategory = catchAsync(async (req, res) => {
-  const slug = req.body.slug || (await generateUniqueSlug(Category, req.body.name));
-  const category = await Category.create({ ...req.body, slug });
+  const payload = pick(req.body, ['name', 'icon']);
+  payload.slug = req.body.slug || (await generateUniqueSlug(Category, req.body.name));
+  const category = await Category.create(payload);
   sendSuccess(res, category, undefined, 201);
 });
 
 /** PATCH /api/categories/:id — admin. */
 export const updateCategory = catchAsync(async (req, res, next) => {
-  const updates = { ...req.body };
+  const updates = pick(req.body, ['name', 'icon', 'slug']);
   const category = await Category.findByIdAndUpdate(req.params.id, updates, {
     new: true,
     runValidators: true,

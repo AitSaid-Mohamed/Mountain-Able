@@ -1,12 +1,13 @@
 import { body } from 'express-validator';
 import { ROLES, USER_STATUS } from '../../models/User.js';
+import { passwordRule } from './passwordRule.js';
 
 /** Public officer account request. */
 export const officerRequestRules = [
   body('firstName').trim().notEmpty().withMessage('First name is required.'),
   body('lastName').trim().notEmpty().withMessage('Last name is required.'),
   body('email').isEmail().withMessage('A valid email is required.').normalizeEmail(),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters.'),
+  passwordRule,
   body('municipalityName').trim().notEmpty().withMessage('Municipality name is required.'),
   body('region').trim().notEmpty().withMessage('Region is required.'),
   body('message').optional().trim(),

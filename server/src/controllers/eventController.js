@@ -2,6 +2,7 @@ import Event from '../models/Event.js';
 import Village from '../models/Village.js';
 import catchAsync from '../utils/catchAsync.js';
 import { sendSuccess } from '../utils/apiResponse.js';
+import { pick } from '../utils/pick.js';
 
 /**
  * GET /api/events — public global list.
@@ -36,14 +37,16 @@ export const listVillageEvents = catchAsync(async (req, res) => {
 
 /** POST /api/villages/:villageId/events — create (officer/own, admin). */
 export const createEvent = catchAsync(async (req, res) => {
-  const event = await Event.create({ ...req.body, villageId: req.village._id });
+  const payload = pick(req.body, ['title', 'description', 'startDate', 'endDate', 'image']);
+  payload.villageId = req.village._id; // ownership-scoped, never client-set
+  const event = await Event.create(payload);
   sendSuccess(res, event, undefined, 201);
 });
 
 /** PATCH /api/events/:id — update (ownership via `ownsResource`). */
 export const updateEvent = catchAsync(async (req, res) => {
-  const updates = { ...req.body };
-  delete updates.villageId;
+  // Allow-list: villageId is not settable, so an event cannot be reparented.
+  const updates = pick(req.body, ['title', 'description', 'startDate', 'endDate', 'image']);
   const event = await Event.findByIdAndUpdate(req.resource._id, updates, {
     new: true,
     runValidators: true,

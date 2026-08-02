@@ -16,6 +16,7 @@ import { useModal } from '../context/ModalContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import api from '../lib/api.js';
 import { GROUPS } from '../lib/poi.js';
+import { invalidate } from '../lib/requestCache.js';
 import { formatDistance, formatDuration } from '../lib/utils.js';
 
 const EXTERNAL_MODE = { 'driving-car': 'driving', 'cycling-regular': 'bicycling', 'foot-walking': 'walking' };
@@ -96,6 +97,7 @@ export default function RoutePlannerPage() {
         distance: plan.route.distance, duration: plan.route.duration, geometry: plan.route.geometry,
       });
       setSaved(true);
+      invalidate('/me/routes');
       toast.success(t('route.actions.saved'));
     } catch (err) {
       toast.error(err.response?.data?.message ?? t('auth.errors.generic'));
