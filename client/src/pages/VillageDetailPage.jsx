@@ -1,11 +1,12 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, MountainSnow } from 'lucide-react';
+import { ChevronLeft, MountainSnow, Route } from 'lucide-react';
 import Container from '../components/layout/Container.jsx';
 import { Rating, Skeleton, ErrorState, EmptyState, Button, Badge } from '../components/ui/index.js';
 import Gallery from '../components/village/Gallery.jsx';
 import VillageSidebar from '../components/village/VillageSidebar.jsx';
 import ReviewsSection from '../components/village/ReviewsSection.jsx';
+import VillageOwnControls from '../components/village/VillageOwnControls.jsx';
 import { useFetch } from '../hooks/useFetch.js';
 
 export default function VillageDetailPage() {
@@ -62,7 +63,7 @@ export default function VillageDetailPage() {
             }
           />
         ) : (
-          <ErrorState onRetry={refetch} />
+          <ErrorState error={error} onRetry={refetch} />
         )}
       </Container>
     );
@@ -96,6 +97,13 @@ export default function VillageDetailPage() {
             ) : (
               <Badge tone="neutral">{t('card.noReviews')}</Badge>
             )}
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <Button as={Link} to={`/villages/${village.slug}/route`} variant="brand">
+              <Route size={18} aria-hidden="true" /> {t('village.planJourney')}
+            </Button>
+            <VillageOwnControls village={village} />
           </div>
 
           <div className="mt-6 flex items-center gap-4">

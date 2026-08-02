@@ -15,3 +15,28 @@
     @apply bg-cream text-ink font-sans;
   }
 }
+
+/* Print stylesheet — a clean paper copy of a planned route. In a valley with
+   no signal, paper is the honest answer. Hides site chrome, the interactive
+   map and controls; keeps the summary, advisories, "along the way" and
+   directions in a single scrollable/printable column. */
+@media print {
+  header,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+  .lg\:h-\[76vh\],
+  .lg\:overflow-y-auto {
+    height: auto !important;
+    overflow: visible !important;
+  }
+  main,
+  body {
+    background: #fff !important;
+  }
+  .shadow-card {
+    box-shadow: none !important;
+    border: 1px solid #e5e5e5;
+  }
+}

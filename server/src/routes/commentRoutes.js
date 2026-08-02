@@ -6,6 +6,7 @@ import {
   deleteComment,
   listPendingComments,
   moderateComment,
+  listMyComments,
 } from '../controllers/commentController.js';
 import { protect, restrictTo } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
@@ -30,6 +31,9 @@ commentNestedRouter.post(
 
 /** Top-level /api/comments — author edits, deletion, admin moderation. */
 export const commentTopRouter = Router();
+
+// The caller's own reviews (declared before /:id routes).
+commentTopRouter.get('/me', protect, listMyComments);
 
 // Admin moderation queue (declared before /:id routes for clarity).
 commentTopRouter.get('/pending', protect, restrictTo('admin'), listPendingComments);

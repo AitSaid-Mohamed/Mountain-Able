@@ -8,6 +8,21 @@ import APIFeatures from '../utils/APIFeatures.js';
 const EDIT_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 /**
+ * GET /api/comments/me — the caller's own reviews, newest first, paginated,
+ * with the village populated. Scoped to `req.user`; never returns others'.
+ */
+export const listMyComments = catchAsync(async (req, res) => {
+  const filter = { userId: req.user._id };
+  const total = await Comment.countDocuments(filter);
+  const features = new APIFeatures(Comment.find(), req.query)
+    .filter(filter)
+    .sort({ newest: '-createdAt' }, 'newest')
+    .paginate({ defaultLimit: 10, maxLimit: 50 });
+  const comments = await features.query.populate('villageId', 'name slug region coverImage');
+  sendSuccess(res, comments, buildMeta(total, features.page, features.limit));
+});
+
+/**
  * GET /api/villages/:villageId/comments — public, approved only, newest first,
  * paginated.
  */

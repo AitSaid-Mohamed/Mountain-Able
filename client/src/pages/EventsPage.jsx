@@ -19,7 +19,7 @@ export default function EventsPage() {
 
       <div className="mt-10">
         {error ? (
-          <ErrorState onRetry={refetch} />
+          <ErrorState error={error} onRetry={refetch} />
         ) : loading ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (

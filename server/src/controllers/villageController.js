@@ -1,4 +1,4 @@
-import Village from '../models/Village.js';
+import Village, { toGeoPoint } from '../models/Village.js';
 import Attraction from '../models/Attraction.js';
 import Event from '../models/Event.js';
 import Comment from '../models/Comment.js';
@@ -134,6 +134,7 @@ export const createVillage = catchAsync(async (req, res, next) => {
   }
 
   payload.slug = await generateUniqueSlug(Village, payload.name);
+  if (payload.location) payload.geo = toGeoPoint(payload.location);
   const village = await Village.create(payload);
   sendSuccess(res, village, undefined, 201);
 });
@@ -151,6 +152,7 @@ export const updateVillage = catchAsync(async (req, res) => {
   if (updates.name && updates.name !== req.village.name) {
     updates.slug = await generateUniqueSlug(Village, updates.name, req.village._id);
   }
+  if (updates.location) updates.geo = toGeoPoint(updates.location);
 
   const village = await Village.findByIdAndUpdate(req.village._id, updates, {
     new: true,

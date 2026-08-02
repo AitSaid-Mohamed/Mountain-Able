@@ -37,6 +37,21 @@ export function onImageError(e) {
   e.currentTarget.src = FALLBACK_IMAGE;
 }
 
+/** Format a distance in metres as km (1 decimal) or m. */
+export function formatDistance(metres) {
+  if (metres == null) return '—';
+  return metres >= 1000 ? `${(metres / 1000).toFixed(1)} km` : `${Math.round(metres)} m`;
+}
+
+/** Format a duration in seconds as "Xh Ym" or "Ym". */
+export function formatDuration(seconds) {
+  if (seconds == null) return '—';
+  const mins = Math.round(seconds / 60);
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+
 /** Format a date range for events, respecting the active locale. */
 export function formatDate(value, locale = 'en') {
   if (!value) return '';

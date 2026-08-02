@@ -1,37 +1,84 @@
 import { NavLink } from 'react-router-dom';
-import { Mountain } from 'lucide-react';
+import { LogOut } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils.js';
 
 /**
- * Vertical dashboard navigation. `items` is an array of
- * `{ to, label, icon }`. Shared by the officer/admin/authority dashboards
- * (built in the next step) so their chrome is consistent.
+ * Dashboard sidebar: 300px `bg-cta` column (72px icon-only rail when
+ * collapsed). A white logo pill on top, role nav items with an active
+ * indicator bar, and Logout pinned to the bottom. Nav is driven by the
+ * per-role config, not hardcoded.
  */
-export default function DashboardSidebar({ items = [], title }) {
+export default function DashboardSidebar({ items = [], base, collapsed, onLogout, onNavigate }) {
+  const { t } = useTranslation();
+
   return (
-    <aside className="flex w-60 shrink-0 flex-col border-r border-ink/10 bg-white">
-      <div className="flex items-center gap-2 px-5 py-5 text-primary">
-        <Mountain size={24} />
-        <span className="font-semibold text-ink">{title}</span>
+    <aside
+      className={cn(
+        'flex h-full flex-col bg-cta text-white transition-[width] duration-200',
+        collapsed ? 'w-[72px]' : 'w-[300px]'
+      )}
+    >
+      {/* Logo pill */}
+      <div className="flex items-center justify-center px-4 py-5">
+        <div
+          className={cn(
+            'flex items-center justify-center whitespace-nowrap rounded-pill bg-white font-bold text-cta',
+            collapsed ? 'h-11 w-11 text-lg' : 'h-[50px] w-[268px] max-w-full text-[24px]'
+          )}
+        >
+          {collapsed ? 'M' : 'Mountain-Able'}
+        </div>
       </div>
-      <nav className="flex-1 space-y-1 px-3 py-2">
-        {items.map(({ to, label, icon: Icon }) => (
+      <div className="mx-4 border-t border-white/30" />
+
+      {/* Nav */}
+      <nav className="flex-1 space-y-2 overflow-y-auto px-3 py-5">
+        {items.map(({ to, key, icon: Icon }) => (
           <NavLink
-            key={to}
-            to={to}
-            end
+            key={key}
+            to={to ? `${base}/${to}` : base}
+            end={!to}
+            onClick={onNavigate}
+            title={collapsed ? t(`dash.nav.${key}`) : undefined}
             className={({ isActive }) =>
               cn(
-                'flex items-center gap-3 rounded-card px-3 py-2.5 text-body transition',
-                isActive ? 'bg-primary/10 font-semibold text-primary' : 'text-ink/70 hover:bg-black/5'
+                'relative flex items-center rounded-card py-2.5 text-body-lg font-medium transition',
+                collapsed ? 'justify-center px-2' : 'gap-5 px-4',
+                isActive
+                  ? 'bg-white/15 text-white'
+                  : 'text-[#f3f4f4]/90 hover:bg-white/10 hover:text-white'
               )
             }
           >
-            {Icon && <Icon size={18} aria-hidden="true" />}
-            {label}
+            {({ isActive }) => (
+              <>
+                {isActive && (
+                  <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r bg-white" aria-hidden="true" />
+                )}
+                <Icon size={collapsed ? 24 : 26} aria-hidden="true" />
+                {!collapsed && <span>{t(`dash.nav.${key}`)}</span>}
+              </>
+            )}
           </NavLink>
         ))}
       </nav>
+
+      {/* Logout */}
+      <div className="px-3 pb-5">
+        <button
+          type="button"
+          onClick={onLogout}
+          title={collapsed ? t('nav.logout') : undefined}
+          className={cn(
+            'flex w-full items-center rounded-card py-2.5 text-body-lg font-medium text-[#f3f4f4]/90 transition hover:bg-white/10 hover:text-white',
+            collapsed ? 'justify-center px-2' : 'gap-5 px-4'
+          )}
+        >
+          <LogOut size={collapsed ? 24 : 26} aria-hidden="true" />
+          {!collapsed && <span>{t('nav.logout')}</span>}
+        </button>
+      </div>
     </aside>
   );
 }

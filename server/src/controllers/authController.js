@@ -47,16 +47,20 @@ export const login = catchAsync(async (req, res, next) => {
   }
 
   user.password = undefined; // never serialise the hash
+  // Populate the municipality so the client (officer dashboard/profile) has its
+  // name without an extra request.
+  await user.populate('municipalityId', 'name region province');
   const token = signToken(user.id);
   sendSuccess(res, { token, user });
 });
 
 /**
  * GET /api/auth/me
- * Return the currently authenticated user's profile.
+ * Return the currently authenticated user's profile (municipality populated).
  */
 export const getMe = catchAsync(async (req, res) => {
-  sendSuccess(res, { user: req.user });
+  const user = await User.findById(req.user.id).populate('municipalityId', 'name region province');
+  sendSuccess(res, { user });
 });
 
 /**

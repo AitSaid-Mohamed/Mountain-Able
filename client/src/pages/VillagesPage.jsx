@@ -133,7 +133,7 @@ export default function VillagesPage() {
         {/* Grid */}
         <div className="min-w-0 flex-1">
           {error ? (
-            <ErrorState onRetry={refetch} />
+            <ErrorState error={error} onRetry={refetch} />
           ) : loading ? (
             <div className="grid gap-6 sm:grid-cols-2">
               {Array.from({ length: LIMIT }).map((_, i) => (

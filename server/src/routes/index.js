@@ -7,6 +7,8 @@ import categoryRoutes from './categoryRoutes.js';
 import userRoutes from './userRoutes.js';
 import officerRequestRoutes from './officerRequestRoutes.js';
 import statsRoutes from './statsRoutes.js';
+import meRoutes from './meRoutes.js';
+import routeRoutes from './routeRoutes.js';
 import { attractionItemRouter } from './attractionRoutes.js';
 import { eventTopRouter } from './eventRoutes.js';
 import { commentTopRouter } from './commentRoutes.js';
@@ -37,5 +39,7 @@ router.use('/categories', categoryRoutes);
 router.use('/users', userRoutes);
 router.use('/officer-requests', officerRequestRoutes);
 router.use('/stats', statsRoutes);
+router.use('/me', meRoutes);
+router.use('/routes', routeRoutes);
 
 export default router;

@@ -7,14 +7,20 @@ import 'leaflet/dist/leaflet.css';
 import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { ModalProvider } from './context/ModalContext.jsx';
+import { ToastProvider } from './context/ToastContext.jsx';
+import { MeProvider } from './context/MeContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <ModalProvider>
-          <App />
-        </ModalProvider>
+        <ToastProvider>
+          <ModalProvider>
+            <MeProvider>
+              <App />
+            </MeProvider>
+          </ModalProvider>
+        </ToastProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>

@@ -273,6 +273,96 @@ Role: `admin`. Body: `{ "status": "approved" | "rejected" }`.
 
 **200** updated comment (triggers rating recalculation).
 
+### `GET /api/comments/me`
+Auth (own records). The caller's own reviews, newest first, paginated
+(`page`, `limit`), with the village populated (`name`, `slug`, `region`,
+`coverImage`).
+
+---
+
+## Personal data — "My space" (tourist)
+
+Self-declared personal data for tourists. **Every route is scoped to the
+authenticated tourist's own records** — one user's data is never exposed to
+another — and is guarded by `restrictTo('tourist')`. Visits and favourites are
+**self-reported**; the platform never detects or infers a visit.
+
+### `GET /api/me/visited`
+The caller's declared visits, newest first, with the village populated.
+
+### `POST /api/me/visited`
+Declare a visit. Body: `{ "villageId", "visitedAt"?, "note"? }` (`visitedAt`
+defaults to now; `note` ≤ 280 chars). One visit record per village.
+
+**201** created record (village populated) · **409** if already marked · **404** unknown village.
+
+### `PATCH /api/me/visited/:id`
+Edit the date or note of one's own visit. Body: `{ "visitedAt"?, "note"? }`.
+
+**200** updated record · **404** if the record is not the caller's.
+
+### `DELETE /api/me/visited/:id`
+Remove one's own visit declaration. **200** `{ "deleted": true }`.
+
+### `GET /api/me/favorites`
+The caller's saved villages, newest first, with the village populated.
+
+### `POST /api/me/favorites`
+Save a village. Body: `{ "villageId" }`. **201** · **409** if already saved · **404** unknown village.
+
+### `DELETE /api/me/favorites/:id`
+Remove one's own favourite. **200** `{ "deleted": true }`.
+
+### `GET /api/me/routes`
+Saved routes, newest first, with the destination village populated.
+
+### `POST /api/me/routes`
+Save a planned route. Body: `{ villageId, startLabel?, startLocation:{lat,lng}, profile, distance?, duration?, geometry? }`.
+
+### `DELETE /api/me/routes/:id`
+Remove one's own saved route.
+
+### `GET /api/me/stats`
+The caller's own aggregate figures (via aggregation pipelines):
+
+```json
+{ "success": true, "data": {
+  "villagesVisited": 4, "villagesFavorited": 3, "reviewsWritten": 6,
+  "averageRatingGiven": 4.3, "distinctRegionsVisited": 4,
+  "regionsVisited": ["Abruzzo", "Aosta Valley", "Basilicata", "Piedmont"],
+  "mostRecentVisit": { "visitedAt": "...", "village": { "name": "Chamois", "slug": "chamois" } } } }
+```
+
+---
+
+## Route planning
+
+Public but rate-limited more strictly (30 requests / 15 min per IP), since each
+request may call third-party services (OSRM, Open-Meteo, Overpass, Nominatim),
+all of which are cached. Data provenance is explicit: **platform data** (our DB),
+**OpenStreetMap** (Overpass, attributed), and **computed** (from route geometry).
+This is a pre-trip planning tool, not a navigation service.
+
+### `POST /api/routes/plan`
+Body: `{ start:{lat,lng}, villageId, profile, date? }` where `profile` is
+`driving-car` | `cycling-regular` | `foot-walking`.
+
+Returns the destination village, the computed route (`geometry` `[lng,lat][]`,
+`distance` m, `duration` s, `steps`, `elevation` profile), a terrain `summary`
+(ascent, descent, maxAltitude, steepest), derived `advisories`, and `platform`
+data within the corridor (`villagesAlong`, `attractionsByCategory`,
+`eventsAlong`) computed via a geospatial query. On a routing failure it returns
+`{ destination, route: null, routeError }` — never a fake straight line.
+
+### `GET /api/routes/corridor?geometry=lng,lat;lng,lat&types=fuel,supermarket`
+OSM POIs within ~2 km of the route (via a bounding-box Overpass query filtered
+in-app), plus surface-derived `surfaceAdvisories`. Degrades to
+`{ pois: [], unavailable: true }` when Overpass cannot be reached — sparse or
+missing coverage is normal in mountain areas. Attributed to OpenStreetMap.
+
+### `GET /api/routes/geocode?q=<place>`
+Nominatim place search for choosing a start point → `[{ label, lat, lng }]`.
+
 ---
 
 ## Municipalities

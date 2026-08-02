@@ -1,15 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { User, LayoutDashboard, LogOut, ChevronDown } from 'lucide-react';
+import { User, LayoutDashboard, LogOut, ChevronDown, Compass } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { cn, mediaUrl } from '../../lib/utils.js';
 
-/** Dashboard route for each non-tourist role (dashboards built in a later step). */
+/** Dashboard base route for each non-tourist role. */
 const DASHBOARD_PATH = {
-  officer: '/dashboard/officer',
-  admin: '/dashboard/admin',
-  authority: '/dashboard/authority',
+  officer: '/dashboard',
+  admin: '/admin',
+  authority: '/authority',
 };
 
 /** Authenticated avatar dropdown: name, profile, dashboard link, logout. */
@@ -69,6 +69,11 @@ export default function UserMenu() {
           <MenuLink to="/profile" icon={User} onClick={() => setOpen(false)}>
             {t('nav.myProfile')}
           </MenuLink>
+          {user.role === 'tourist' && (
+            <MenuLink to="/my" icon={Compass} onClick={() => setOpen(false)}>
+              {t('nav.mySpace')}
+            </MenuLink>
+          )}
           {dashboard && (
             <MenuLink to={dashboard} icon={LayoutDashboard} onClick={() => setOpen(false)}>
               {t('nav.dashboard')}

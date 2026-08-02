@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import api, { TOKEN_KEY } from '../lib/api.js';
+import api, { TOKEN_KEY, isNetworkError } from '../lib/api.js';
 
 const AuthContext = createContext(null);
 
@@ -11,6 +11,9 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  // Set when the session couldn't be hydrated because the server was
+  // unreachable (network error) rather than because the token was invalid.
+  const [authError, setAuthError] = useState(null);
 
   const hydrate = useCallback(async () => {
     const token = localStorage.getItem(TOKEN_KEY);
@@ -18,12 +21,23 @@ export function AuthProvider({ children }) {
       setLoading(false);
       return;
     }
+    setLoading(true);
     try {
       const res = await api.get('/auth/me');
       setUser(res.data.data.user);
-    } catch {
-      localStorage.removeItem(TOKEN_KEY);
-      setUser(null);
+      setAuthError(null);
+    } catch (err) {
+      // Only a rejected/expired token (401) invalidates the session. If the
+      // server was simply unreachable (network error, restarting), keep the
+      // token so the session recovers once it comes back — don't log out, and
+      // record the error so the guard can offer a retry instead of a redirect.
+      if (isNetworkError(err)) {
+        setAuthError(err);
+      } else {
+        localStorage.removeItem(TOKEN_KEY);
+        setUser(null);
+        setAuthError(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -59,13 +73,15 @@ export function AuthProvider({ children }) {
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
     setUser(null);
+    setAuthError(null);
   }, []);
 
   const updateUser = useCallback((patch) => {
     setUser((prev) => (prev ? { ...prev, ...patch } : prev));
   }, []);
 
-  const value = { user, loading, login, register, logout, updateUser };
+  const hasToken = Boolean(localStorage.getItem(TOKEN_KEY));
+  const value = { user, loading, authError, hasToken, reloadUser: hydrate, login, register, logout, updateUser };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

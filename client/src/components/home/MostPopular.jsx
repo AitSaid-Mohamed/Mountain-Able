@@ -29,7 +29,7 @@ export default function MostPopular({ villages, loading, error, onRetry }) {
 
         <div className="mt-8">
           {error ? (
-            <ErrorState onRetry={onRetry} />
+            <ErrorState error={error} onRetry={onRetry} />
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {loading

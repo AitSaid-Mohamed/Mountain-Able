@@ -265,6 +265,87 @@ Content-Type: application/json
 DELETE {{baseUrl}}/comments/{{commentId}}
 Authorization: Bearer {{touristToken}}
 
+### --------------------------------------------- MY SPACE (tourist, own data)
+
+### My own reviews (paginated, village populated)
+GET {{baseUrl}}/comments/me
+Authorization: Bearer {{touristToken}}
+
+### My personal aggregate stats
+GET {{baseUrl}}/me/stats
+Authorization: Bearer {{touristToken}}
+
+### List my declared visits
+GET {{baseUrl}}/me/visited
+Authorization: Bearer {{touristToken}}
+
+### Declare a visit (self-reported; visitedAt optional, note optional)
+# @name addVisit
+POST {{baseUrl}}/me/visited
+Authorization: Bearer {{touristToken}}
+Content-Type: application/json
+
+{ "villageId": "{{villageId}}", "visitedAt": "2026-05-01", "note": "Beautiful stone lanes." }
+
+###
+@visitId = {{addVisit.response.body.data._id}}
+
+### Edit my visit (date or note)
+PATCH {{baseUrl}}/me/visited/{{visitId}}
+Authorization: Bearer {{touristToken}}
+Content-Type: application/json
+
+{ "note": "Updated note after a second trip." }
+
+### Remove my visit
+DELETE {{baseUrl}}/me/visited/{{visitId}}
+Authorization: Bearer {{touristToken}}
+
+### List my favourites
+GET {{baseUrl}}/me/favorites
+Authorization: Bearer {{touristToken}}
+
+### Save a favourite
+# @name addFav
+POST {{baseUrl}}/me/favorites
+Authorization: Bearer {{touristToken}}
+Content-Type: application/json
+
+{ "villageId": "{{villageId}}" }
+
+###
+@favId = {{addFav.response.body.data._id}}
+
+### Remove a favourite
+DELETE {{baseUrl}}/me/favorites/{{favId}}
+Authorization: Bearer {{touristToken}}
+
+### ------------------------------------------------ ROUTE PLANNING (public)
+
+### Geocode a start town
+GET {{baseUrl}}/routes/geocode?q=Aosta
+
+### Plan a route (start → village), with elevation, advisories and platform data
+# @name plan
+POST {{baseUrl}}/routes/plan
+Content-Type: application/json
+
+{ "start": { "lat": 45.7372, "lng": 7.3206 }, "villageId": "{{villageId}}", "profile": "driving-car", "date": "2026-08-15" }
+
+### Corridor POIs (paste a simplified "lng,lat;lng,lat" geometry from the plan)
+GET {{baseUrl}}/routes/corridor?geometry=16.045,40.5286;16.05,40.52;16.0642,40.5108&types=fuel,supermarket,viewpoint,historic
+
+### Save a planned route (tourist)
+POST {{baseUrl}}/me/routes
+Authorization: Bearer {{touristToken}}
+Content-Type: application/json
+
+{ "villageId": "{{villageId}}", "startLabel": "Aosta", "startLocation": { "lat": 45.7372, "lng": 7.3206 }, "profile": "driving-car", "distance": 39854, "duration": 2460 }
+
+### List my saved routes
+GET {{baseUrl}}/me/routes
+Authorization: Bearer {{touristToken}}
+
 ### ------------------------------------------------------ MUNICIPALITIES
 
 ### List

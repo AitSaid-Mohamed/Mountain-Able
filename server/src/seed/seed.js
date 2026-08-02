@@ -20,6 +20,9 @@ import Attraction from '../models/Attraction.js';
 import Event from '../models/Event.js';
 import Comment from '../models/Comment.js';
 import OfficerRequest from '../models/OfficerRequest.js';
+import VisitedVillage from '../models/VisitedVillage.js';
+import Favorite from '../models/Favorite.js';
+import SavedRoute from '../models/SavedRoute.js';
 
 import { municipalities, categories, villages } from './data.js';
 
@@ -92,6 +95,9 @@ async function seed() {
     Event.deleteMany({}),
     Comment.deleteMany({}),
     OfficerRequest.deleteMany({}),
+    VisitedVillage.deleteMany({}),
+    Favorite.deleteMany({}),
+    SavedRoute.deleteMany({}),
   ]);
   console.log('🧹 Collections cleared.');
 
@@ -111,6 +117,7 @@ async function seed() {
       region: v.region,
       province: v.province,
       location: v.location,
+      geo: { type: 'Point', coordinates: [v.location.lng, v.location.lat] },
       altitude: v.altitude,
       population: v.population,
       municipalityId: municipalityByName.get(v.municipality)._id,
@@ -284,6 +291,35 @@ async function seed() {
     },
   ]);
   console.log('📨 2 pending officer requests.');
+
+  // 6c. Self-declared visits and favourites for the first two tourists, so the
+  // tourist dashboard has data on first login. (Never auto-detected.)
+  const day = 24 * 60 * 60 * 1000;
+  const sara = touristDocs[0];
+  const davide = touristDocs[1];
+  const visitedSeed = [
+    { user: sara, vi: 0, daysAgo: 20, note: 'Left the car in Buisson and took the cable car — magical silence.' },
+    { user: sara, vi: 8, daysAgo: 75, note: 'The Volo dell\'Angelo was the highlight.' },
+    { user: sara, vi: 11, daysAgo: 140, note: 'The heart-shaped lake really is heart-shaped from above.' },
+    { user: sara, vi: 3, daysAgo: 210, note: '' },
+    { user: davide, vi: 15, daysAgo: 30, note: 'Colourful Tyrolean streets, great coffee.' },
+    { user: davide, vi: 18, daysAgo: 90, note: '' },
+  ];
+  await VisitedVillage.insertMany(
+    visitedSeed.map((v) => ({
+      userId: v.user._id,
+      villageId: villageDocs[v.vi]._id,
+      visitedAt: new Date(Date.now() - v.daysAgo * day),
+      note: v.note || undefined,
+    }))
+  );
+  await Favorite.insertMany([
+    { userId: sara._id, villageId: villageDocs[5]._id },
+    { userId: sara._id, villageId: villageDocs[11]._id },
+    { userId: sara._id, villageId: villageDocs[16]._id },
+    { userId: davide._id, villageId: villageDocs[2]._id },
+  ]);
+  console.log(`🧭 ${visitedSeed.length} visited records, 4 favourites.`);
 
   // 7. Recompute rating aggregates for every village (approved comments only).
   // insertMany bypasses document hooks, so trigger the static explicitly.
