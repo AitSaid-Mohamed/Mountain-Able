@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import api, { TOKEN_KEY, isNetworkError } from '../lib/api.js';
+import { cachedGet, invalidate } from '../lib/requestCache.js';
 
 const AuthContext = createContext(null);
 
@@ -15,7 +16,7 @@ export function AuthProvider({ children }) {
   // unreachable (network error) rather than because the token was invalid.
   const [authError, setAuthError] = useState(null);
 
-  const hydrate = useCallback(async () => {
+  const hydrate = useCallback(async (force = false) => {
     const token = localStorage.getItem(TOKEN_KEY);
     if (!token) {
       setLoading(false);
@@ -23,8 +24,10 @@ export function AuthProvider({ children }) {
     }
     setLoading(true);
     try {
-      const res = await api.get('/auth/me');
-      setUser(res.data.data.user);
+      // Through the shared cache so a StrictMode double-invoke (or two guards
+      // hydrating at once) shares one request instead of opening two.
+      const res = await cachedGet('/auth/me', { bypassCache: force });
+      setUser(res.data.user);
       setAuthError(null);
     } catch (err) {
       // Only a rejected/expired token (401/403) invalidates the session. If the
@@ -57,6 +60,9 @@ export function AuthProvider({ children }) {
 
   const persist = (token, nextUser) => {
     localStorage.setItem(TOKEN_KEY, token);
+    // Drop everything cached for the previous session — the cache is keyed by
+    // URL, not by user, so a signed-in read must never survive a switch.
+    invalidate();
     setUser(nextUser);
   };
 
@@ -76,6 +82,7 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
+    invalidate();
     setUser(null);
     setAuthError(null);
   }, []);
@@ -85,7 +92,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const hasToken = Boolean(localStorage.getItem(TOKEN_KEY));
-  const value = { user, loading, authError, hasToken, reloadUser: hydrate, login, register, logout, updateUser };
+  const value = { user, loading, authError, hasToken, reloadUser: () => hydrate(true), login, register, logout, updateUser };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

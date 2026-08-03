@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Sparkles } from 'lucide-react';
 import { PageHeader, Panel, AttractionManager } from '../../../components/dashboard/index.js';
 import { Select, EmptyState } from '../../../components/ui/index.js';
-import { useOfficerScope } from '../../../hooks/useOfficerScope.js';
+import { useOfficerScope } from '../../../context/OfficerScopeContext.jsx';
 import { useDashboard } from '../../../context/DashboardContext.js';
 import { useFetch } from '../../../hooks/useFetch.js';
 

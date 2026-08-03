@@ -1,39 +1,25 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MessageSquare, Flag } from 'lucide-react';
 import { PageHeader, Panel } from '../../../components/dashboard/index.js';
 import { Select, Rating, Button, Spinner, EmptyState, ErrorState } from '../../../components/ui/index.js';
-import { useOfficerScope } from '../../../hooks/useOfficerScope.js';
+import { useOfficerScope } from '../../../context/OfficerScopeContext.jsx';
 import { useToast } from '../../../context/ToastContext.jsx';
-import api from '../../../lib/api.js';
 import { formatDate } from '../../../lib/utils.js';
 
 export default function OfficerFeedback() {
   const { t, i18n } = useTranslation();
   const toast = useToast();
-  const { villages, loading: vLoading, error: vError, refetch } = useOfficerScope();
-  const [all, setAll] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { villages, feedback, loading, error: vError, refetch } = useOfficerScope();
   const [villageId, setVillageId] = useState('');
   const [rating, setRating] = useState('');
   const [reported, setReported] = useState([]);
 
-  // Fetch approved reviews across the officer's villages.
-  useEffect(() => {
-    if (villages.length === 0) { if (!vLoading) setLoading(false); return; }
-    let active = true;
-    (async () => {
-      setLoading(true);
-      const results = await Promise.all(
-        villages.map((v) =>
-          api.get(`/villages/${v._id}/comments`, { params: { limit: 50 } })
-            .then((r) => r.data.data.map((c) => ({ ...c, villageId: v._id, villageName: v.name })))
-        )
-      );
-      if (active) { setAll(results.flat()); setLoading(false); }
-    })();
-    return () => { active = false; };
-  }, [villages, vLoading]);
+  // The reviews come from the shared officer scope, which already fetches them
+  // once per village. This screen previously repeated that fan-out with its own
+  // request per village, keyed on the `villages` array identity — so it re-ran
+  // every time the scope reloaded.
+  const all = feedback;
 
   const filtered = useMemo(
     () => all.filter((c) => (!villageId || c.villageId === villageId) && (!rating || c.rating === Number(rating))),

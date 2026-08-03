@@ -6,6 +6,7 @@ import DashboardSidebar from '../components/ui/DashboardSidebar.jsx';
 import DashboardTopbar from '../components/ui/DashboardTopbar.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { DashboardContext } from '../context/DashboardContext.js';
+import { OfficerScopeProvider } from '../context/OfficerScopeContext.jsx';
 import { useMediaQuery } from '../hooks/useMediaQuery.js';
 import { DASHBOARDS } from '../config/dashboardNav.js';
 
@@ -46,47 +47,52 @@ export default function DashboardLayout({ role }) {
 
   return (
     <DashboardContext.Provider value={ctx}>
-      <div className="flex h-screen overflow-hidden bg-[#f9fcfb]">
-        {/* Sidebar — off-canvas on mobile */}
-        <div
-          className={`${mobileOpen ? 'fixed inset-y-0 left-0 z-40' : 'hidden'} lg:static lg:z-auto lg:block`}
-        >
-          <DashboardSidebar
-            items={config.items}
-            base={config.base}
-            collapsed={collapsed && !mobileOpen}
-            onLogout={logout}
-            onNavigate={() => setMobileOpen(false)}
-          />
-        </div>
-        {mobileOpen && (
-          <div className="fixed inset-0 z-30 bg-black/40 lg:hidden" onClick={() => setMobileOpen(false)} aria-hidden="true" />
-        )}
-
-        {/* Main column */}
-        <div className="flex min-w-0 flex-1 flex-col">
-          <DashboardTopbar
-            onToggleSidebar={() => (isDesktop ? setCollapsed((c) => !c) : setMobileOpen((o) => !o))}
-            breadcrumb={breadcrumb}
-            user={user}
-            base={config.base}
-            onLogout={logout}
-          />
-
-          {readOnly && (
-            <div className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-6 py-2.5 text-small text-amber-800">
-              <AlertTriangle size={18} className="shrink-0" aria-hidden="true" />
-              {t('dash.readOnlyBanner')}
-            </div>
+      {/* Officer scope is loaded once here, not per screen — six dashboard
+          pages read the same villages/attractions/events/reviews. Inert for
+          admins and authorities. */}
+      <OfficerScopeProvider>
+        <div className="flex h-screen overflow-hidden bg-[#f9fcfb]">
+          {/* Sidebar — off-canvas on mobile */}
+          <div
+            className={`${mobileOpen ? 'fixed inset-y-0 left-0 z-40' : 'hidden'} lg:static lg:z-auto lg:block`}
+          >
+            <DashboardSidebar
+              items={config.items}
+              base={config.base}
+              collapsed={collapsed && !mobileOpen}
+              onLogout={logout}
+              onNavigate={() => setMobileOpen(false)}
+            />
+          </div>
+          {mobileOpen && (
+            <div className="fixed inset-0 z-30 bg-black/40 lg:hidden" onClick={() => setMobileOpen(false)} aria-hidden="true" />
           )}
 
-          <main className="flex-1 overflow-y-auto px-4 py-6 md:px-6">
-            <div className="mx-auto w-full max-w-[1080px]">
-              <Outlet />
-            </div>
-          </main>
+          {/* Main column */}
+          <div className="flex min-w-0 flex-1 flex-col">
+            <DashboardTopbar
+              onToggleSidebar={() => (isDesktop ? setCollapsed((c) => !c) : setMobileOpen((o) => !o))}
+              breadcrumb={breadcrumb}
+              user={user}
+              base={config.base}
+              onLogout={logout}
+            />
+
+            {readOnly && (
+              <div className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-6 py-2.5 text-small text-amber-800">
+                <AlertTriangle size={18} className="shrink-0" aria-hidden="true" />
+                {t('dash.readOnlyBanner')}
+              </div>
+            )}
+
+            <main className="flex-1 overflow-y-auto px-4 py-6 md:px-6">
+              <div className="mx-auto w-full max-w-[1080px]">
+                <Outlet />
+              </div>
+            </main>
+          </div>
         </div>
-      </div>
+      </OfficerScopeProvider>
     </DashboardContext.Provider>
   );
 }

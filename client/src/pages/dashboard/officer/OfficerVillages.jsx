@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Plus, Pencil, Sparkles, CalendarDays, ExternalLink, Trash2 } from 'lucide-react';
 import { PageHeader, RowActions } from '../../../components/dashboard/index.js';
 import { DataTable, Input, Select, Button, Rating, Badge, ConfirmDialog } from '../../../components/ui/index.js';
-import { useOfficerScope } from '../../../hooks/useOfficerScope.js';
+import { useOfficerScope } from '../../../context/OfficerScopeContext.jsx';
 import { useDashboard } from '../../../context/DashboardContext.js';
 import { useToast } from '../../../context/ToastContext.jsx';
 import api from '../../../lib/api.js';

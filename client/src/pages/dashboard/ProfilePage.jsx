@@ -10,7 +10,7 @@ import { StatCard, Button, Input, Modal, ConfirmDialog } from '../../components/
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { useFetch } from '../../hooks/useFetch.js';
-import { useOfficerScope } from '../../hooks/useOfficerScope.js';
+import { useOfficerScope } from '../../context/OfficerScopeContext.jsx';
 import api from '../../lib/api.js';
 import { formatDate } from '../../lib/utils.js';
 

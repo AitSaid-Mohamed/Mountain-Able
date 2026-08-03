@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Mountain, Sparkles, CalendarDays, MessageSquare, Pencil } from 'lucide-react';
 import { PageHeader, Panel } from '../../../components/dashboard/index.js';
 import { StatCard, Rating, Badge, Skeleton, ErrorState, EmptyState } from '../../../components/ui/index.js';
-import { useOfficerScope } from '../../../hooks/useOfficerScope.js';
+import { useOfficerScope } from '../../../context/OfficerScopeContext.jsx';
 import { mediaUrl, onImageError, FALLBACK_IMAGE, formatDate } from '../../../lib/utils.js';
 
 export default function OfficerOverview() {

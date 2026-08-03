@@ -8,6 +8,7 @@ import { useDashboard } from '../../../context/DashboardContext.js';
 import { useToast } from '../../../context/ToastContext.jsx';
 import { useFetch } from '../../../hooks/useFetch.js';
 import api from '../../../lib/api.js';
+import { cachedGet } from '../../../lib/requestCache.js';
 import { mediaUrl, onImageError } from '../../../lib/utils.js';
 
 const EMPTY = { name: '', description: '', shortDescription: '', region: '', province: '', altitude: '', population: '', location: { lat: '', lng: '' } };
@@ -36,9 +37,11 @@ export default function VillageEditor() {
     let active = true;
     (async () => {
       try {
-        // The detail endpoint is by slug; look the village up in the officer's list by id.
-        const res = await api.get('/villages', { params: { includeUnpublished: 'true', limit: 50 } });
-        const v = res.data.data.find((x) => x._id === id);
+        // The detail endpoint is by slug; look the village up in the officer's
+        // list by id. Through the shared cache, so this reuses the identical
+        // request the officer scope has already made rather than repeating it.
+        const res = await cachedGet('/villages', { params: { includeUnpublished: 'true', limit: 50 } });
+        const v = res.data.find((x) => x._id === id);
         if (!v) throw new Error('not found');
         if (!active) return;
         setVillage(v);
