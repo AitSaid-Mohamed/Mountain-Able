@@ -9,6 +9,7 @@ import {
   listMyComments,
 } from '../controllers/commentController.js';
 import { protect, restrictTo, optionalAuth } from '../middleware/auth.js';
+import { canEditComment, canDeleteComment } from '../middleware/ownsComment.js';
 import { validate } from '../middleware/validate.js';
 import {
   createCommentRules,
@@ -48,5 +49,8 @@ commentTopRouter.patch(
   moderateComment
 );
 
-commentTopRouter.patch('/:id', protect, updateCommentRules, validate, updateComment);
-commentTopRouter.delete('/:id', protect, deleteComment);
+// Authorship, the 24-hour edit window and the admin-moderator exception on
+// delete live in middleware like every other authorisation rule in the API —
+// the controllers below assume the check has already passed.
+commentTopRouter.patch('/:id', protect, canEditComment, updateCommentRules, validate, updateComment);
+commentTopRouter.delete('/:id', protect, canDeleteComment, deleteComment);

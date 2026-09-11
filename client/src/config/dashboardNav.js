@@ -10,6 +10,9 @@ import {
   UserPlus,
   ShieldCheck,
   Tags,
+  LifeBuoy,
+  Handshake,
+  Network,
   Map,
   Trophy,
   Smile,
@@ -34,6 +37,10 @@ export const DASHBOARDS = {
       { to: 'attractions', key: 'attractions', icon: Sparkles },
       { to: 'events', key: 'events', icon: CalendarDays },
       { to: 'feedback', key: 'feedback', icon: MessageSquare },
+      // `badge` names a count on the inbox summary; the sidebar renders it when
+      // non-zero. Officers will not sit watching a queue, so the dashboard has
+      // to tell them something is waiting.
+      { to: 'coordination', key: 'coordination', icon: Handshake, badge: 'awaitingResponse' },
       { to: 'profile', key: 'profile', icon: User },
     ],
   },
@@ -49,6 +56,8 @@ export const DASHBOARDS = {
       { to: 'officer-requests', key: 'requests', icon: UserPlus },
       { to: 'moderation', key: 'moderation', icon: ShieldCheck },
       { to: 'categories', key: 'categories', icon: Tags },
+      { to: 'support', key: 'support', icon: LifeBuoy },
+      { to: 'service-types', key: 'serviceTypes', icon: Network },
       { to: 'profile', key: 'profile', icon: User },
     ],
   },
@@ -61,6 +70,7 @@ export const DASHBOARDS = {
       { to: 'regions', key: 'regions', icon: Map },
       { to: 'top-villages', key: 'topVillages', icon: Trophy },
       { to: 'satisfaction', key: 'satisfaction', icon: Smile },
+      { to: 'coordination', key: 'coordination', icon: Handshake },
       { to: 'profile', key: 'profile', icon: User },
     ],
   },

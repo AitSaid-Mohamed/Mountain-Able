@@ -2,27 +2,36 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Mail, MessageCircle, CheckCircle2 } from 'lucide-react';
 import { Modal, Input, Button } from '../ui/index.js';
+import api from '../../lib/api.js';
 
 /**
  * Support dialog (Figma 12:386). Left: email + message + submit. Right: other
- * contact channels. The form logs the submission (no backend endpoint) and
- * shows a success state.
+ * contact channels.
+ *
+ * Submits to `POST /api/support`, which persists the message for an admin to
+ * read in the support inbox. This previously logged to the console and showed a
+ * success panel regardless — the success state now means the message was
+ * actually stored, and a failure says so instead of claiming otherwise.
  */
 export default function SupportModal({ open, onClose }) {
   const { t } = useTranslation();
   const [form, setForm] = useState({ email: '', message: '' });
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
 
   const submit = async (e) => {
     e.preventDefault();
+    setError('');
     setSending(true);
-    // No support endpoint yet — log the submission and simulate a send.
-    // eslint-disable-next-line no-console
-    console.info('[support] submission', form);
-    await new Promise((r) => setTimeout(r, 600));
-    setSending(false);
-    setSent(true);
+    try {
+      await api.post('/support', { email: form.email, message: form.message });
+      setSent(true);
+    } catch (err) {
+      setError(err.response?.data?.message ?? t('support.error'));
+    } finally {
+      setSending(false);
+    }
   };
 
   const close = () => {
@@ -30,6 +39,7 @@ export default function SupportModal({ open, onClose }) {
     // Reset shortly after close so the animation isn't jarring.
     setTimeout(() => {
       setSent(false);
+      setError('');
       setForm({ email: '', message: '' });
     }, 200);
   };
@@ -77,6 +87,9 @@ export default function SupportModal({ open, onClose }) {
                     className="w-full rounded-card bg-white px-4 py-3 text-body text-ink shadow-input placeholder:text-[#757575] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                   />
                 </div>
+                {error && (
+                  <p className="text-small text-red-600" role="alert">{error}</p>
+                )}
                 <Button type="submit" variant="brand" loading={sending} className="w-full">
                   {sending ? t('support.sending') : t('support.send')}
                 </Button>

@@ -12,6 +12,7 @@ import PlanJourneyPage from './pages/PlanJourneyPage.jsx';
 import EventsPage from './pages/EventsPage.jsx';
 import AboutPage from './pages/AboutPage.jsx';
 import SignupPage from './pages/SignupPage.jsx';
+import ClaimVillagePage from './pages/ClaimVillagePage.jsx';
 import LoginRoute from './pages/LoginRoute.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
 import ProfilePage from './pages/dashboard/ProfilePage.jsx';
@@ -31,6 +32,7 @@ import VillageEditor from './pages/dashboard/officer/VillageEditor.jsx';
 import OfficerAttractions from './pages/dashboard/officer/OfficerAttractions.jsx';
 import OfficerEvents from './pages/dashboard/officer/OfficerEvents.jsx';
 import OfficerFeedback from './pages/dashboard/officer/OfficerFeedback.jsx';
+import OfficerCoordination from './pages/dashboard/officer/OfficerCoordination.jsx';
 
 // Admin
 import AdminOverview from './pages/dashboard/admin/AdminOverview.jsx';
@@ -40,12 +42,15 @@ import AdminUsers from './pages/dashboard/admin/AdminUsers.jsx';
 import AdminOfficerRequests from './pages/dashboard/admin/AdminOfficerRequests.jsx';
 import AdminModeration from './pages/dashboard/admin/AdminModeration.jsx';
 import AdminCategories from './pages/dashboard/admin/AdminCategories.jsx';
+import AdminSupport from './pages/dashboard/admin/AdminSupport.jsx';
+import AdminServiceTypes from './pages/dashboard/admin/AdminServiceTypes.jsx';
 
 // Authority
 import AuthorityOverview from './pages/dashboard/authority/AuthorityOverview.jsx';
 import AuthorityRegions from './pages/dashboard/authority/AuthorityRegions.jsx';
 import AuthorityTopVillages from './pages/dashboard/authority/AuthorityTopVillages.jsx';
 import AuthoritySatisfaction from './pages/dashboard/authority/AuthoritySatisfaction.jsx';
+import AuthorityCoordination from './pages/dashboard/authority/AuthorityCoordination.jsx';
 
 export default function App() {
   return (
@@ -60,6 +65,7 @@ export default function App() {
         <Route path="events" element={<EventsPage />} />
         <Route path="about" element={<AboutPage />} />
         <Route path="signup" element={<SignupPage />} />
+        <Route path="claim" element={<ClaimVillagePage />} />
         <Route path="login" element={<LoginRoute />} />
 
         {/* Shared account profile — every authenticated role, public chrome */}
@@ -96,6 +102,7 @@ export default function App() {
         <Route path="attractions" element={<OfficerAttractions />} />
         <Route path="events" element={<OfficerEvents />} />
         <Route path="feedback" element={<OfficerFeedback />} />
+        <Route path="coordination" element={<OfficerCoordination />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
 
@@ -113,6 +120,8 @@ export default function App() {
         <Route path="officer-requests" element={<AdminOfficerRequests />} />
         <Route path="moderation" element={<AdminModeration />} />
         <Route path="categories" element={<AdminCategories />} />
+        <Route path="support" element={<AdminSupport />} />
+        <Route path="service-types" element={<AdminServiceTypes />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
 
@@ -125,6 +134,7 @@ export default function App() {
         <Route path="regions" element={<AuthorityRegions />} />
         <Route path="top-villages" element={<AuthorityTopVillages />} />
         <Route path="satisfaction" element={<AuthoritySatisfaction />} />
+        <Route path="coordination" element={<AuthorityCoordination />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
     </Routes>

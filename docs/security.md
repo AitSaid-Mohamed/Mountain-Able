@@ -29,11 +29,11 @@ a single host.
 | CORS | `cors` with a single fixed `CLIENT_ORIGIN` (never reflects the request origin) | Cross-origin credential theft |
 | Authentication | JWT bearer tokens signed with `JWT_SECRET`; passwords hashed with bcrypt (cost 12) | Credential theft, forged sessions |
 | Token revocation | `tokenVersion` embedded in the JWT and checked in `protect` | Continued use of a stolen/compromised token after password change or suspension |
-| Authorisation | `restrictTo(...roles)`, `requireActive`, `ownsVillage`, `ownsResource` | Privilege escalation, cross-tenant access between officers |
+| Authorisation | `restrictTo(...roles)`, `requireActive`, `ownsVillage`, `ownsResource`, `canEditComment`, `canDeleteComment` | Privilege escalation, cross-tenant access between officers, editing or deleting another user's review |
 | Mass-assignment control | Explicit field allow-lists (`utils/pick.js`) on every write | Setting `role`, `isPublished`, `ratingAverage`, `userId`, … from the request body |
 | Input validation | `express-validator` chains → HTTP 422 with field errors | Malformed/out-of-range input reaching the models |
 | NoSQL-injection sanitisation | `express-mongo-sanitize` (runs before all routes; covers body, query, params) | MongoDB operator injection (`{"$gt":""}`) |
-| Rate limiting | Per-IP general (100/15 min), login/register (20/15 min), routes (60/15 min); plus per-account lockout | Brute force, credential stuffing, DoS of proxied services |
+| Rate limiting | Per-IP general (100/15 min, **production only**), login/register (20/15 min, every environment), support (5/hour, every environment), routes (60/15 min); plus per-account lockout | Brute force, credential stuffing, spam of the public write endpoint, DoS of proxied services |
 | Upload safety | Declared-MIME filter **and** magic-byte verification; server-generated filenames; hardened static headers | Stored XSS via SVG/HTML, spoofed content type, path traversal |
 | Outbound-request safety | Coordinate bounds validation, fixed provider hosts, geometry-size cap, explicit timeouts | SSRF, DoS against us and against third parties |
 | Error handling | Centralised handler; stack traces only in development | Information disclosure |
@@ -130,6 +130,35 @@ actually submitted, and the client invalidates a session on `401`/`403` alone.
 Brute-force protection is unchanged; the general limiter and the per-account
 lockout still cover everything else.
 
+*Second follow-up — environment scoping.* The general limiter is now applied
+only when `NODE_ENV === 'production'`; previously it ran everywhere except
+`test`. Its 100 requests / 15 min per IP is sized for one real user's browsing,
+which a single-machine demo or an end-to-end run does not resemble: one officer
+dashboard load costs 11 requests, so roughly nine page loads exhaust the window
+and everything after it returns `429`. Every developer and demo request also
+shares one IP, which no deployment does. The two limiters are scoped by their
+purpose rather than by a single environment switch:
+
+- **`authLimiter`** (login/register) runs in **every** environment, including
+  development and test. Brute-force protection that disables itself outside
+  production is not protection, and 20 credential submissions / 15 min never
+  obstructs legitimate use.
+- **`generalLimiter`** is a flood defence with no meaning on a developer
+  machine, and runs in **production only**.
+- **`routesLimiter`** keeps its own gate in `routeRoutes.js` (skipped under
+  `test`), because it protects *third parties* — OSRM, Overpass, Nominatim,
+  Open-Meteo — from our development traffic just as much as our own server.
+
+Production behaviour is unchanged: all limiters are active there.
+
+*Third addition — the public support endpoint.* `POST /api/support` was added so
+the footer's support dialog could stop claiming to have sent messages it
+discarded (§3.7). It is the only public, unauthenticated endpoint that persists
+free text, which makes it the obvious spam target in the API, so it carries
+`supportLimiter` — 5 messages per hour per IP, in **every** environment. It sits
+in the same category as `authLimiter`: a public write that a limiter must cover
+even in development, because `generalLimiter` does not run there.
+
 ### 3.6 External-service proxy hardening — **Medium**
 
 *Finding.* The routing endpoints turn the server into an HTTP client acting on
@@ -205,6 +234,52 @@ is therefore to **not** downgrade now, to document the reasoning here, and to
 adopt the fixed release once a non-breaking one is published. The server has no
 outstanding advisories.
 
+### 3.11 Interface claiming success without a server action — **Low (integrity)**
+
+*Finding.* Found by an audit of the running application against the project
+report's own claims (`docs/role-audit.md`). The support dialog displayed
+*"Thanks for reaching out! We'll get back to you soon"* after writing the
+submission to `console.info` and discarding it. No message reached anyone.
+
+This is not a vulnerability in the usual sense — nothing is exposed and no access
+control is bypassed. It is recorded here because the same audit checked two
+neighbouring claims that *are* security properties, and because an interface that
+reports success for an action that did not occur is an integrity defect regardless
+of whether an attacker is involved: a user who reported a safety problem with a
+mountain route would reasonably believe it had been received.
+
+*Fix.* `POST /api/support` persists the message (`SupportMessage`) and an
+administrator reads and triages it in a support inbox. The success panel is now
+shown only after a `201`, and a failure surfaces an error instead.
+
+*Related finding, same audit.* The route planner offered a **Save this route**
+control to every signed-in user, while `/api/me/*` is `restrictTo('tourist')` —
+so an officer, admin or authority clicking it received a 403. Fixed by hiding the
+control for those roles. Both cases are the same underlying mistake: the
+interface asserting something the API does not support.
+
+### 3.12 Authorisation living in a controller — **Low (consistency)**
+
+*Finding.* From the same audit. This document and the project report both present
+centralised authorisation as a design property: the rule lives in `protect` /
+`restrictTo` / `requireActive` / `ownsVillage` / `ownsResource`, and no controller
+repeats it. That was true everywhere except two routes. `PATCH` and
+`DELETE /api/comments/:id` carried `protect` alone, and their authorship checks —
+is the caller the author, is the 24-hour edit window still open, is the caller an
+admin acting as moderator — sat inline in `commentController.js`.
+
+The checks were correct, so nothing was exploitable. The risk is structural: an
+authorisation rule that lives in a controller is one a future reader will not find
+when auditing the middleware, and one a new endpoint can silently fail to inherit.
+
+*Fix.* Extracted to `server/src/middleware/ownsComment.js` as `canEditComment` and
+`canDeleteComment`, mounted on the routes and attaching the loaded document to
+`req.comment` so the controllers do not re-query. Admins deliberately receive **no**
+edit exception — their tools for a bad review are moderation and deletion, never
+rewriting another person's words under their name. Verified: non-author edit 403,
+outside-window edit 403, author edit within the window 200, admin delete 200,
+unknown id 404. The claim of centralised authorisation now holds without exception.
+
 ## 4. Documented trade-offs
 
 ### 4.1 Token storage: `localStorage` vs httpOnly cookie
@@ -239,3 +314,10 @@ All fixes were verified with scripted checks against a running server: 14 checks
 for mass assignment, enumeration, password policy and coordinate/geometry
 bounds, and 7 for token revocation, account lockout and upload magic-byte
 validation — 21 in total, all passing.
+
+The two findings added later (§3.11, §3.12) were verified separately against the
+running API: the support endpoint across create/validate/list/triage/delete and
+each role's access to it; the comment guards across author, non-author, admin,
+in-window, out-of-window and unknown-id cases; and `POST /api/me/routes` returning
+403 for a non-tourist, which is what made the route planner's Save control a
+defect rather than a cosmetic issue.

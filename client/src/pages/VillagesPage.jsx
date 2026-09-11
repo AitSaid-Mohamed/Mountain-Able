@@ -22,6 +22,7 @@ export default function VillagesPage() {
   const search = params.get('search') ?? '';
   const region = params.get('region') ?? '';
   const minRating = params.get('minRating') ?? '';
+  const category = params.get('category') ?? '';
   const sort = params.get('sort') ?? DEFAULT_SORT;
   const page = Math.max(1, parseInt(params.get('page') ?? '1', 10) || 1);
 
@@ -48,20 +49,33 @@ export default function VillagesPage() {
     [params, setParams]
   );
 
-  const apiParams = useMemo(
+  // The filters both the grid and the map are drawn from. Kept separate from
+  // sort/page so that paging or re-sorting does not refetch the map: neither
+  // changes which villages match, only their order and which slice is shown.
+  const filterParams = useMemo(
     () => ({
       ...(search && { search }),
       ...(region && { region }),
       ...(minRating && { minRating }),
-      sort,
-      page,
-      limit: LIMIT,
+      ...(category && { category }),
     }),
-    [search, region, minRating, sort, page]
+    [search, region, minRating, category]
+  );
+
+  const apiParams = useMemo(
+    () => ({ ...filterParams, sort, page, limit: LIMIT }),
+    [filterParams, sort, page]
   );
 
   const { data: villages, meta, loading, error, refetch } = useFetch('/villages', { params: apiParams });
-  const { data: mapVillages } = useFetch('/villages/map');
+  // Same filters, no pagination: the grid shows one page, the map shows every
+  // match. `useFetch` serialises params to a stable key, so this fires exactly
+  // once per filter change and not at all when only sort or page changes.
+  const {
+    data: mapVillages,
+    loading: mapLoading,
+    error: mapError,
+  } = useFetch('/villages/map', { params: filterParams });
   const { data: municipalities } = useFetch('/municipalities');
 
   const regions = useMemo(() => {
@@ -69,11 +83,35 @@ export default function VillagesPage() {
     return [...set].sort();
   }, [municipalities]);
 
-  const hasFilters = Boolean(search || region || minRating || sort !== DEFAULT_SORT);
+  const hasFilters = Boolean(search || region || minRating || category || sort !== DEFAULT_SORT);
   const clearFilters = () => {
     setSearchInput('');
     setParams({}, { replace: true });
   };
+
+  // One definition, rendered in both the mobile drawer and the desktop aside.
+  // The map mirrors the grid's states: when a filter matches nothing there are
+  // no markers to draw, so an empty Leaflet canvas would read as a broken map.
+  // The empty state fills the panel but is top-aligned rather than centred in
+  // it, so it sits at the same height as the grid's empty state beside it.
+  const mapPanel = mapError ? (
+    <ErrorState error={mapError} />
+  ) : !mapLoading && mapVillages?.length === 0 ? (
+    // The wrapper carries the panel height, not the EmptyState: `cn` is a plain
+    // join, so a `justify-start` on the component would lose to its own
+    // `justify-center`. Letting it size to its content inside a full-height box
+    // puts it at the top, level with the grid's empty state.
+    <div className="h-full bg-cream">
+      <EmptyState
+        icon={MapIcon}
+        title={t('villages.mapNoResults')}
+        description={t('villages.mapNoResultsHint')}
+        className="px-6"
+      />
+    </div>
+  ) : (
+    <VillagesMap villages={mapVillages ?? []} highlightId={hovered} />
+  );
 
   const sortOptions = [
     { value: '-rating', label: t('villages.sort.ratingDesc') },
@@ -124,7 +162,7 @@ export default function VillagesPage() {
         </Button>
         {showMapMobile && (
           <div className="mt-3 h-72 overflow-hidden rounded-card shadow-card">
-            <VillagesMap villages={mapVillages ?? []} highlightId={hovered} />
+            {mapPanel}
           </div>
         )}
       </div>
@@ -178,7 +216,7 @@ export default function VillagesPage() {
         {/* Sticky map (desktop) */}
         <aside className="hidden w-[396px] shrink-0 lg:block">
           <div className="sticky top-24 h-[calc(100vh-8rem)] overflow-hidden rounded-card shadow-card">
-            <VillagesMap villages={mapVillages ?? []} highlightId={hovered} />
+            {mapPanel}
           </div>
         </aside>
       </div>

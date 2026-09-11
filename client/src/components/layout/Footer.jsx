@@ -23,7 +23,7 @@ export default function Footer() {
       links: [
         { label: t('footer.ourMission'), to: '/about' },
         { label: t('footer.howItWorks'), to: '/about' },
-        { label: t('footer.forMunicipalities'), to: '/about' },
+        { label: t('footer.forMunicipalities'), to: '/claim' },
       ],
     },
     {

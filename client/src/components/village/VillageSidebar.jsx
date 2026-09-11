@@ -4,6 +4,7 @@ import * as Icons from 'lucide-react';
 import { MapPin, Building2, Sparkles, CalendarDays, MessageSquare, Route } from 'lucide-react';
 import { Card, Button } from '../ui/index.js';
 import DetailMap from './DetailMap.jsx';
+import { useAuth } from '../../context/AuthContext.jsx';
 import { formatDate } from '../../lib/utils.js';
 
 /** Render a lucide icon by its name string, with a safe fallback. */
@@ -132,6 +133,47 @@ export default function VillageSidebar({ village, attractions = [], events = [] 
           </ul>
         )}
       </Card>
+
+      <ClaimPrompt village={village} municipality={muni} />
     </div>
+  );
+}
+
+/**
+ * "Are you the municipality?" entry point into the officer-request flow, with
+ * the municipality, region and province pre-filled from this village so an
+ * officer arriving from their own page does not retype what we already know.
+ *
+ * Hidden from signed-in officers, admins and authorities — they already hold an
+ * account, and offering them a request form would be noise. Logged-out visitors
+ * and tourists see it, since either may turn out to represent the comune.
+ */
+function ClaimPrompt({ village, municipality }) {
+  const { t } = useTranslation();
+  const { user } = useAuth();
+
+  if (user && user.role !== 'tourist') return null;
+
+  const query = new URLSearchParams({
+    ...(municipality?.name && { municipality: municipality.name }),
+    ...(village.region && { region: village.region }),
+    ...(village.province && { province: village.province }),
+    village: village.name,
+  });
+
+  return (
+    <Card className="p-5">
+      <div className="flex items-center gap-2">
+        <Building2 size={18} className="shrink-0 text-primary" aria-hidden="true" />
+        <h3 className="text-h3 text-ink">{t('claim.fromVillageTitle')}</h3>
+      </div>
+      <p className="mt-2 text-body text-ink/70">{t('claim.fromVillageBody')}</p>
+      <Link
+        to={`/claim?${query}`}
+        className="mt-3 inline-block text-body font-semibold text-primary hover:underline"
+      >
+        {t('claim.fromVillageCta')} →
+      </Link>
+    </Card>
   );
 }

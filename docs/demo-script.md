@@ -14,6 +14,11 @@ a tourist discovers and plans a journey around it, and a regional authority
 reads the aggregate that results. Each step exists because the previous one
 produced something.
 
+Step 7b then turns the chain sideways. Everything up to that point shows a
+municipality speaking to tourists; 7b is the only part where municipalities speak
+to each other, and it is the part that answers an objective the original proposal
+set out and the rest of the build leaves untouched. Budget for it.
+
 Password for every seeded account: `Password123!`
 
 ---
@@ -25,6 +30,7 @@ Password for every seeded account: `Password123!`
 | 1 | `cd server && npm run dev`, `cd client && npm run dev` | API on `:5000`, Vite on `:5173`. |
 | 2 | `cd server && npm run seed` — **only if the data looks wrong** | Reseeding resets everything, including the 6 pending reviews the moderation step depends on. If you reseed, warm the cache again afterwards: village IDs change. |
 | 3 | `cd server && npm run warm-cache` | Must print `4/4` warmed and `4/4` verified. Note which journeys report a POI count — see step 6. |
+| 3b | Open `/dashboard/coordination?tab=neighbours` once as `officer.torgnon@mountainable.it` | Ranking calls OSRM's table service. The result is cached for seven days, but the first call of the day takes a second or two — do it before the room is watching. |
 | 4 | Log in as all four roles in **four separate browser profiles or windows** | The app holds one session at a time. Switching roles by logging out mid-demo costs ~20 seconds each time and invites a typo in front of the examiners. |
 | 5 | Zoom the browser to 100 %, window at 1440 × 900 | Matches the layout the design system targets; the dashboard sidebar collapses below ~1100 px. |
 | 6 | Open the four starting tabs listed below | Avoids typing URLs on stage. |
@@ -209,12 +215,72 @@ Scanno** is the default choice below; `Brescia → Bagolino` is the fallback.
 
 ---
 
+## 7b · The municipalities coordinate  ·  2:00
+
+**Window B ·** `http://localhost:5173/dashboard` · sign in as
+`officer.torgnon@mountainable.it`
+
+This is the strongest step in the demonstration, because everything before it
+shows a municipality speaking to tourists. This is the only part where
+municipalities speak to **each other**.
+
+1. Point at the **Coordination** entry in the sidebar — it carries a **count**.
+   Torgnon has one unanswered request waiting.
+   > A municipality of a few hundred residents cannot sustain a shuttle, a guide
+   > or a rental point. A valley of six such villages usually can. The capacity
+   > exists; it is fragmented across boundaries the terrain does not respect.
+2. **Our capabilities** — Torgnon declares a hostel, cross-country hire, a hall
+   and local produce. Toggling a service on takes a few seconds, which is
+   deliberate: a directory nobody fills in is worth nothing.
+3. **Neighbours** — the directory, ranked by **travel time, not distance**. This
+   is the moment to slow down:
+   > Valtournenche is **5.8 kilometres from Torgnon in a straight line**. By road
+   > it is **26.5 kilometres and 88 minutes**, because the only way between them
+   > goes down to the valley floor and back up. A straight-line radius would have
+   > called that neighbour *close*. This is why the ranking uses the routing
+   > service, and it is one OSRM matrix call, not one call per candidate.
+4. **Our requests** — open the closed one for *accessible transport*. It was
+   raised twice and met neither time.
+5. **Raise a request** and choose a service. Before sending anything, the dialog
+   shows **exactly which municipalities will receive it**, with travel times.
+   > An officer must never be unsure who they just contacted.
+6. Switch to `officer.valtournenche@mountainable.it` → **Incoming**, and answer
+   one. Three options, not two — *we can help*, *we can partly help*, *we
+   cannot*.
+   > A neighbour who can send one minibus instead of two is the realistic case in
+   > mountain terrain. And a clear no is more useful than silence.
+7. Say the boundary out loud, before anyone asks:
+   > There is no price here, no availability calendar, no booking and no payment.
+   > The platform introduces the two administrations and records the outcome. The
+   > arrangement happens between them, off the platform, exactly as it does today
+   > — except that today they have no way to find each other.
+
+**Window D ·** `/authority/coordination`
+
+8. **Where to invest** — the table flags **accessible transport** as a priority:
+   sought twice, met neither time, declared by one municipality in fourteen.
+   > This is the part no single comune could produce. Each of them knows only
+   > its own unmet need. Pooled across the territory it becomes evidence of which
+   > capability is persistently missing — which is exactly what a regional
+   > authority needs to direct investment.
+9. Point at the **coverage matrix** and its empty cells, and at **n < 5** where a
+   rate is withheld.
+   > Ten requests is not a statistically meaningful sample, so the screen shows
+   > counts and refuses to print a percentage from one or two cases. The same
+   > honesty rule that removed the invented visitor counts from the village page.
+
+---
+
 ## 8 · Close  ·  0:45
 
 Return to window A, home page.
 
 - Recap the chain in one sentence: *officer publishes → admin approves →
   tourist discovers and plans → authority measures.*
+- Then the second one, which is the part that answers the original proposal's
+  unrealised objective: *municipalities declare what they can offer, ask their
+  neighbours for what they cannot, and the record of what went unmet becomes
+  territorial evidence.*
 - State the scope boundary before you are asked: **no booking, no payments, no
   transport optimisation, no chatbot.** These are documented as future work,
   not omissions.
@@ -235,11 +301,22 @@ Return to window A, home page.
 | 5 · Review loop closes | 1:15 | 7:30 |
 | 6 · Journey planner | 2:00 | 9:30 |
 | 7 · Authority | 1:15 | 10:45 |
-| 8 · Close | 0:45 | 11:30 |
+| 7b · Municipalities coordinate | 2:00 | 12:45 |
+| 8 · Close | 0:45 | 13:30 |
 
-Eleven and a half minutes at a comfortable pace. To reach ten: shorten step 2 by
-filling fewer fields, and cut step 7 to the overview and the satisfaction chart
-only. **Do not cut step 5.**
+Thirteen and a half minutes at a comfortable pace — the walkthrough has outgrown
+the original ten-minute budget, and step 7b is the reason.
+
+**If you must cut to ten minutes, cut steps 2 and 7, not 7b.** Step 2 can be
+shortened by filling fewer fields; step 7 can drop to the overview and the
+satisfaction chart alone. Step 7b is the only part of the demonstration that
+shows municipalities working with each other rather than publishing at tourists,
+and it is the part that answers an objective the proposal set and the rest of the
+build does not touch. **Do not cut step 5 or step 7b.**
+
+If the presentation is strictly capped at ten minutes, the better trade is to
+merge 7 and 7b: open `/authority/coordination` as the single authority screen and
+skip the other three, keeping the officer half of 7b intact.
 
 ---
 
@@ -264,6 +341,7 @@ only. **Do not cut step 5.**
 | Admin | `admin@mountainable.it` | Full access; moderates, publishes, manages users. |
 | Authority | `authority@mountainable.it` | Read-only aggregate statistics. |
 | Officer | `officer.aosta@mountainable.it` | Unione Comuni Valle d'Aosta. Others: `officer.lucane@`, `officer.gransasso@`, `officer.agordina@`. |
+| Officer (coordination) | `officer.torgnon@mountainable.it` | **Use these for step 7b.** The Valtournenche/Ayas cluster, the only municipalities with real neighbours: also `officer.valtournenche@`, `officer.antey@`, `officer.ayas@`. Torgnon has an unanswered incoming request, so its sidebar badge shows a count. |
 | Tourist | `sara@example.com` | Has visits and favourites already. Others: `davide@`, `elena@`, `matteo@`, `francesca@`, `andrea@`, `martina@example.com`. |
 
 Password for all of them: `Password123!`

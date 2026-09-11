@@ -56,15 +56,24 @@ export function createApp() {
   );
 
   // --- Rate limiting -------------------------------------------------------
-  // Disabled under NODE_ENV=test so automated end-to-end runs aren't throttled.
-  if (config.nodeEnv !== 'test') {
-    // The strict limiter guards *credential submission* only. It must not
-    // cover GET /api/auth/me: that endpoint validates an existing session and
-    // fires on every page load, so a limiter sized for brute-force attempts
-    // (20 / 15 min) throttles ordinary browsing, and the client reads the
-    // resulting 429 as a rejected token and logs the user out.
-    app.use('/api/auth/login', authLimiter);
-    app.use('/api/auth/register', authLimiter);
+  // The strict limiter guards *credential submission* only, and runs in every
+  // environment: brute-force protection that switches itself off outside
+  // production is not protection, and 20 attempts / 15 min never obstructs
+  // ordinary use. It must not cover GET /api/auth/me: that endpoint validates
+  // an existing session and fires on every page load, so a limiter sized for
+  // brute-force attempts throttles ordinary browsing, and the client reads the
+  // resulting 429 as a rejected token and logs the user out.
+  app.use('/api/auth/login', authLimiter);
+  app.use('/api/auth/register', authLimiter);
+
+  // The general limiter is a production-only defence against traffic floods.
+  // It is skipped in development and test because it is sized for a single
+  // real user's browsing (100 requests / 15 min per IP), not for the request
+  // volume of a demo or an end-to-end run: one officer dashboard load alone
+  // costs 11 requests, so a ten-minute walkthrough across three dashboards
+  // exhausts the window and every subsequent call 429s. Both are the same
+  // machine on one IP, which no deployment resembles.
+  if (config.nodeEnv === 'production') {
     app.use('/api', generalLimiter); // 100 requests / 15 min per IP
   }
 

@@ -9,7 +9,9 @@ import { cn } from '../../lib/utils.js';
  * indicator bar, and Logout pinned to the bottom. Nav is driven by the
  * per-role config, not hardcoded.
  */
-export default function DashboardSidebar({ items = [], base, collapsed, onLogout, onNavigate }) {
+export default function DashboardSidebar({
+  items = [], base, collapsed, onLogout, onNavigate, badges = {},
+}) {
   const { t } = useTranslation();
 
   return (
@@ -34,7 +36,12 @@ export default function DashboardSidebar({ items = [], base, collapsed, onLogout
 
       {/* Nav */}
       <nav className="flex-1 space-y-2 overflow-y-auto px-3 py-5">
-        {items.map(({ to, key, icon: Icon }) => (
+        {items.map(({ to, key, icon: Icon, badge }) => {
+          // Officers will not sit watching a queue, so a nav item may carry a
+          // count of what is waiting. Rendered only when non-zero: a permanent
+          // "0" is noise that trains people to ignore the indicator.
+          const count = badge ? badges[badge] ?? 0 : 0;
+          return (
           <NavLink
             key={key}
             to={to ? `${base}/${to}` : base}
@@ -57,11 +64,22 @@ export default function DashboardSidebar({ items = [], base, collapsed, onLogout
                   <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r bg-white" aria-hidden="true" />
                 )}
                 <Icon size={collapsed ? 24 : 26} aria-hidden="true" />
-                {!collapsed && <span>{t(`dash.nav.${key}`)}</span>}
+                {!collapsed && <span className="flex-1">{t(`dash.nav.${key}`)}</span>}
+                {count > 0 && (
+                  <span
+                    className={cn(
+                      'flex min-w-[22px] items-center justify-center rounded-pill bg-white px-1.5 text-small font-semibold text-cta',
+                      collapsed && 'absolute right-1 top-1 h-5 min-w-[20px] text-[11px]'
+                    )}
+                  >
+                    {count}
+                  </span>
+                )}
               </>
             )}
           </NavLink>
-        ))}
+          );
+        })}
       </nav>
 
       {/* Logout */}

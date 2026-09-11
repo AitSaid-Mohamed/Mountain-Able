@@ -25,6 +25,25 @@ export const authLimiter = rateLimit({
 });
 
 /**
+ * Limiter for the public support submission: 5 messages per hour per IP.
+ *
+ * Applied in every environment, like `authLimiter` and unlike `generalLimiter`.
+ * `POST /api/support` is unauthenticated and persists free text, so it is the
+ * natural spam target in the API; five messages an hour is far beyond what one
+ * genuine person needs and well short of what makes flooding worthwhile.
+ */
+export const supportLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Too many support messages sent. Please try again later.',
+  },
+});
+
+/**
  * Tighter limiter for the routing endpoints, since each request may hit
  * third-party services (OSRM, Open-Meteo, Overpass, Nominatim): 60 requests
  * per 15 minutes per IP. Caching absorbs most repeat traffic beneath this.

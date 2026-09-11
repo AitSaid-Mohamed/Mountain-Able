@@ -184,6 +184,20 @@ export default function SignupPage() {
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onAvatar} />
           <p className="mt-3 text-center text-small font-medium text-ink">{t('auth.avatar')}</p>
           <p className="mt-1 max-w-[220px] text-center text-small text-ink/50">{t('auth.avatarHint')}</p>
+
+          {/* This form creates tourist accounts only — the registration endpoint
+              forces the role. Officers apply through a reviewed request instead,
+              so point them there rather than letting them fill in the wrong form. */}
+          <div className="mt-8 w-full rounded-card bg-white p-5 shadow-card">
+            <h2 className="text-body-lg font-semibold text-ink">{t('claim.fromSignupTitle')}</h2>
+            <p className="mt-1.5 text-small text-ink/60">{t('claim.fromSignupBody')}</p>
+            <Link
+              to="/claim"
+              className="mt-3 inline-block text-small font-semibold text-primary hover:underline"
+            >
+              {t('claim.fromSignupCta')} →
+            </Link>
+          </div>
         </div>
       </div>
     </Container>

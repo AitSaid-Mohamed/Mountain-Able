@@ -9,6 +9,7 @@ import { DashboardContext } from '../context/DashboardContext.js';
 import { OfficerScopeProvider } from '../context/OfficerScopeContext.jsx';
 import { useMediaQuery } from '../hooks/useMediaQuery.js';
 import { DASHBOARDS } from '../config/dashboardNav.js';
+import { useFetch } from '../hooks/useFetch.js';
 
 /**
  * Shared chrome for all three dashboards, driven by the per-role config passed
@@ -28,6 +29,13 @@ export default function DashboardLayout({ role }) {
   useEffect(() => setCollapsed(!isDesktop), [isDesktop]);
 
   const readOnly = user?.role === 'officer' && user?.status === 'pending';
+
+  // Coordination inbox counts for the sidebar badge. One small read on mount
+  // through the shared cache — not a polling loop: the natural rhythm of
+  // inter-municipal correspondence is days, so a count that is right whenever
+  // the officer opens the dashboard is proportionate. (Email would be better
+  // still, and is noted as a limitation in the report rather than pretended at.)
+  const { data: inbox } = useFetch(role === 'officer' ? '/coordination/inbox' : null);
 
   // Breadcrumb: role title → current section (→ deeper segment label).
   const breadcrumb = useMemo(() => {
@@ -57,6 +65,7 @@ export default function DashboardLayout({ role }) {
             className={`${mobileOpen ? 'fixed inset-y-0 left-0 z-40' : 'hidden'} lg:static lg:z-auto lg:block`}
           >
             <DashboardSidebar
+              badges={inbox ?? {}}
               items={config.items}
               base={config.base}
               collapsed={collapsed && !mobileOpen}

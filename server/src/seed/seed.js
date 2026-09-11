@@ -23,8 +23,15 @@ import OfficerRequest from '../models/OfficerRequest.js';
 import VisitedVillage from '../models/VisitedVillage.js';
 import Favorite from '../models/Favorite.js';
 import SavedRoute from '../models/SavedRoute.js';
+import ServiceType from '../models/ServiceType.js';
+import MunicipalityCapability from '../models/MunicipalityCapability.js';
+import CoordinationRequest from '../models/CoordinationRequest.js';
+import CoordinationResponse from '../models/CoordinationResponse.js';
 
-import { municipalities, categories, villages } from './data.js';
+import {
+  municipalities, categories, villages,
+  serviceTypes, capabilitySeed, requestSeed,
+} from './data.js';
 
 // --- Small deterministic helpers -----------------------------------------
 const IMAGE_POOL = [
@@ -98,6 +105,10 @@ async function seed() {
     VisitedVillage.deleteMany({}),
     Favorite.deleteMany({}),
     SavedRoute.deleteMany({}),
+    ServiceType.deleteMany({}),
+    MunicipalityCapability.deleteMany({}),
+    CoordinationRequest.deleteMany({}),
+    CoordinationResponse.deleteMany({}),
   ]);
   console.log('🧹 Collections cleared.');
 
@@ -193,6 +204,13 @@ async function seed() {
     { firstName: 'Marco', lastName: 'Ferrari', email: 'officer.lucane@mountainable.it', municipality: 'Unione Comuni Dolomiti Lucane' },
     { firstName: 'Chiara', lastName: 'Esposito', email: 'officer.gransasso@mountainable.it', municipality: 'Comunità Montana Gran Sasso–Alto Sangro' },
     { firstName: 'Luca', lastName: 'Colombo', email: 'officer.agordina@mountainable.it', municipality: 'Unione Montana Agordina e Giudicarie' },
+    // The Valtournenche/Ayas cluster — these four make the coordination feature
+    // demonstrable, since each needs an officer able to receive and answer a
+    // neighbour's request.
+    { firstName: 'Elena', lastName: 'Bionaz', email: 'officer.valtournenche@mountainable.it', municipality: 'Comune di Valtournenche' },
+    { firstName: 'Davide', lastName: 'Perrin', email: 'officer.torgnon@mountainable.it', municipality: 'Comune di Torgnon' },
+    { firstName: 'Sofia', lastName: 'Maquignaz', email: 'officer.antey@mountainable.it', municipality: 'Comune di Antey-Saint-Andre' },
+    { firstName: 'Matteo', lastName: 'Favre', email: 'officer.ayas@mountainable.it', municipality: 'Comune di Ayas' },
   ];
   const officerDocs = [];
   for (const o of officerSpecs) {
@@ -328,6 +346,152 @@ async function seed() {
   for (const village of villageDocs) {
     await Comment.recalculateRatings(village._id);
   }
+  // 7. Inter-municipal coordination: taxonomy, declared capabilities, and a
+  //    spread of requests across every lifecycle state.
+  const serviceTypeDocs = await ServiceType.insertMany(serviceTypes);
+  const typeBySlug = new Map(serviceTypeDocs.map((t) => [t.slug, t]));
+  const officerByMunicipality = new Map(
+    officerDocs.map((o) => [String(o.municipalityId), o])
+  );
+
+  const capabilitiesToInsert = [];
+  for (const entry of capabilitySeed) {
+    const muni = municipalityByName.get(entry.municipality);
+    if (!muni) continue;
+    const officer = officerByMunicipality.get(String(muni._id));
+    for (const svc of entry.services) {
+      const type = typeBySlug.get(svc.slug);
+      if (!type) continue;
+      capabilitiesToInsert.push({
+        municipalityId: muni._id,
+        serviceTypeId: type._id,
+        description: svc.description,
+        contactName: svc.contactName ?? `${muni.name} — ufficio turismo`,
+        contactEmail: muni.contactEmail,
+        contactPhone: muni.phone,
+        isActive: true,
+        declaredBy: officer?._id,
+        // Spread the confirmation dates so the "stale" flag has something to
+        // catch: a directory whose entries are never reconfirmed is one nobody
+        // can trust, and the screen has to be able to show that.
+        reviewedAt: new Date(Date.now() - rand(5, 400) * 24 * 60 * 60 * 1000),
+      });
+    }
+  }
+  await MunicipalityCapability.insertMany(capabilitiesToInsert);
+  console.log(
+    `🤝 ${serviceTypeDocs.length} service types, ${capabilitiesToInsert.length} declared capabilities.`
+  );
+
+  // Requests. Recipients are resolved the same way the API does — municipalities
+  // within the radius that have declared the service — but with straight-line
+  // distance only, so seeding never depends on a third-party routing provider
+  // being reachable. `rankedBy` records that honestly.
+  const anchorByMunicipality = new Map();
+  for (const v of villageDocs) {
+    const key = String(v.municipalityId);
+    const acc = anchorByMunicipality.get(key) ?? { lat: 0, lng: 0, n: 0 };
+    acc.lat += v.location.lat;
+    acc.lng += v.location.lng;
+    acc.n += 1;
+    anchorByMunicipality.set(key, acc);
+  }
+  for (const [k, a] of anchorByMunicipality) {
+    anchorByMunicipality.set(k, { lat: a.lat / a.n, lng: a.lng / a.n });
+  }
+  const km = (a, b) => {
+    const R = 6371;
+    const toRad = (d) => (d * Math.PI) / 180;
+    const dLat = toRad(b.lat - a.lat);
+    const dLng = toRad(b.lng - a.lng);
+    const x =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(x));
+  };
+  const capabilityIndex = new Map();
+  for (const c of capabilitiesToInsert) {
+    const key = String(c.serviceTypeId);
+    if (!capabilityIndex.has(key)) capabilityIndex.set(key, new Set());
+    capabilityIndex.get(key).add(String(c.municipalityId));
+  }
+
+  let responseCount = 0;
+  for (const r of requestSeed) {
+    const muni = municipalityByName.get(r.from);
+    const type = typeBySlug.get(r.service);
+    if (!muni || !type) continue;
+    const origin = anchorByMunicipality.get(String(muni._id));
+    const providers = capabilityIndex.get(String(type._id)) ?? new Set();
+
+    const recipients = [];
+    for (const [id, anchor] of anchorByMunicipality) {
+      if (id === String(muni._id) || !providers.has(id)) continue;
+      const d = km(origin, anchor);
+      if (d <= r.radiusKm) {
+        recipients.push({ municipalityId: id, travelKm: Math.round(d * 10) / 10, travelMinutes: null });
+      }
+    }
+    // A request always reaches whoever actually answered it in the script.
+    for (const resp of r.respondents) {
+      const rm = municipalityByName.get(resp.municipality);
+      if (rm && !recipients.some((x) => String(x.municipalityId) === String(rm._id))) {
+        recipients.push({ municipalityId: rm._id, travelKm: null, travelMinutes: null });
+      }
+    }
+
+    const createdAt = new Date(Date.now() - r.daysAgo * 24 * 60 * 60 * 1000);
+    const expiresAt = new Date(createdAt.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const closed = r.status !== 'open';
+
+    const doc = await CoordinationRequest.create({
+      municipalityId: muni._id,
+      serviceTypeId: type._id,
+      title: r.title,
+      details: r.details,
+      peopleCount: r.peopleCount,
+      radiusKm: r.radiusKm,
+      status: r.status,
+      rankedBy: 'straight-line',
+      recipients,
+      expiresAt,
+      createdBy: officerByMunicipality.get(String(muni._id))?._id,
+      closedAt: closed ? new Date(createdAt.getTime() + 3 * 24 * 60 * 60 * 1000) : undefined,
+      closedNote: r.closedNote,
+      fulfilledByMunicipalityId: r.fulfilledBy
+        ? municipalityByName.get(r.fulfilledBy)?._id
+        : undefined,
+    });
+    // Backdate creation so the authority's time-to-response figures are real.
+    // Must go through the raw driver: Mongoose marks `createdAt` immutable under
+    // `timestamps: true`, so a model-level update silently drops it and every
+    // seeded request would appear to have been raised today.
+    await CoordinationRequest.collection.updateOne({ _id: doc._id }, { $set: { createdAt } });
+
+    for (const resp of r.respondents) {
+      const rm = municipalityByName.get(resp.municipality);
+      if (!rm) continue;
+      const officer = officerByMunicipality.get(String(rm._id));
+      const respondedAt = new Date(createdAt.getTime() + rand(3, 40) * 60 * 60 * 1000);
+      const created = await CoordinationResponse.create({
+        requestId: doc._id,
+        municipalityId: rm._id,
+        type: resp.type,
+        message: resp.message,
+        contactName: `${rm.name} — ufficio`,
+        contactEmail: rm.contactEmail,
+        contactPhone: rm.phone,
+        createdBy: officer?._id,
+      });
+      await CoordinationResponse.collection.updateOne(
+        { _id: created._id },
+        { $set: { createdAt: respondedAt } }
+      );
+      responseCount += 1;
+    }
+  }
+  console.log(`📬 ${requestSeed.length} coordination requests, ${responseCount} responses.`);
+
   console.log('⭐ Village rating aggregates recomputed.');
 
   await disconnectDB();

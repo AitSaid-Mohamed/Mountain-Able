@@ -87,8 +87,16 @@ export default function RoutePlannerPage() {
     }
   };
 
+  // Saving a route writes to /api/me/routes, which is `restrictTo('tourist')`.
+  // Offering the control to an officer, admin or authority would produce a 403,
+  // so it is hidden for them entirely — the same rule VillageOwnControls applies
+  // to favourites and visits. Logged-out visitors still see it and are prompted
+  // to sign in, since they may well be tourists.
+  const canSave = !user || user.role === 'tourist';
+
   const save = async () => {
     if (!user) { toast.info(t('village.loginToTrack')); openLogin(); return; }
+    if (user.role !== 'tourist') return;
     if (!plan?.route) return;
     setSaving(true);
     try {
@@ -193,9 +201,11 @@ export default function RoutePlannerPage() {
                   </div>
                   {/* Actions */}
                   <div className="mt-4 flex flex-wrap gap-2 no-print">
-                    <Button variant="brand" size="sm" onClick={save} loading={saving} disabled={saved}>
-                      <Save size={15} /> {saved ? t('route.actions.saved') : t('route.actions.save')}
-                    </Button>
+                    {canSave && (
+                      <Button variant="brand" size="sm" onClick={save} loading={saving} disabled={saved}>
+                        <Save size={15} /> {saved ? t('route.actions.saved') : t('route.actions.save')}
+                      </Button>
+                    )}
                     <Button variant="outline" size="sm" onClick={() => window.print()}><Printer size={15} /> {t('route.actions.print')}</Button>
                     <Button as="a" href={externalUrl} target="_blank" rel="noopener noreferrer" variant="outline" size="sm">
                       <ExternalLink size={15} /> {t('route.actions.external')}

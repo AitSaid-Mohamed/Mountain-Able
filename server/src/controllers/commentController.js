@@ -5,8 +5,6 @@ import { sendSuccess } from '../utils/apiResponse.js';
 import { buildMeta } from '../utils/pagination.js';
 import APIFeatures from '../utils/APIFeatures.js';
 
-const EDIT_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
-
 /**
  * GET /api/comments/me — the caller's own reviews, newest first, paginated,
  * with the village populated. Scoped to `req.user`; never returns others'.
@@ -78,19 +76,14 @@ export const createComment = catchAsync(async (req, res, next) => {
 });
 
 /**
- * PATCH /api/comments/:id — the author may edit within 24h of creation.
+ * PATCH /api/comments/:id — apply an edit to the caller's own review.
+ *
+ * Authorship and the 24-hour window are enforced by `canEditComment`, which
+ * also attaches the loaded document as `req.comment`.
  * Uses findByIdAndUpdate so the rating-recalculation query hook fires.
  */
-export const updateComment = catchAsync(async (req, res, next) => {
-  const comment = await Comment.findById(req.params.id);
-  if (!comment) return next(new AppError('Comment not found.', 404));
-
-  if (!comment.userId.equals(req.user._id)) {
-    return next(new AppError('You can only edit your own comment.', 403));
-  }
-  if (Date.now() - comment.createdAt.getTime() > EDIT_WINDOW_MS) {
-    return next(new AppError('Comments can only be edited within 24 hours of posting.', 403));
-  }
+export const updateComment = catchAsync(async (req, res) => {
+  const comment = req.comment;
 
   const updates = {};
   if (req.body.content !== undefined) updates.content = req.body.content;
@@ -110,17 +103,14 @@ export const updateComment = catchAsync(async (req, res, next) => {
 });
 
 /**
- * DELETE /api/comments/:id — the author or an admin may delete.
+ * DELETE /api/comments/:id — remove a review.
+ *
+ * Authorisation (author, or an admin acting as moderator) is enforced by
+ * `canDeleteComment`, which attaches the loaded document as `req.comment`.
  * Uses findByIdAndDelete so the rating-recalculation query hook fires.
  */
-export const deleteComment = catchAsync(async (req, res, next) => {
-  const comment = await Comment.findById(req.params.id);
-  if (!comment) return next(new AppError('Comment not found.', 404));
-
-  const isAuthor = comment.userId.equals(req.user._id);
-  if (!isAuthor && req.user.role !== 'admin') {
-    return next(new AppError('You can only delete your own comment.', 403));
-  }
+export const deleteComment = catchAsync(async (req, res) => {
+  const comment = req.comment;
 
   await Comment.findByIdAndDelete(comment._id);
   sendSuccess(res, { deleted: true, id: comment._id });

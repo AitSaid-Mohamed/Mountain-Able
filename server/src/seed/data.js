@@ -10,6 +10,24 @@
  * Image URLs point to representative mountain-village photographs on Unsplash.
  */
 
+/**
+ * The last four entries form a **deliberate cluster**: real comuni of the
+ * Valtournenche and Ayas valleys in the Aosta Valley, 8-25 km apart, which the
+ * inter-municipal coordination feature needs in order to demonstrate anything.
+ *
+ * The other ten municipalities were chosen to spread twenty scenic villages
+ * across Italy, which is right for a discovery platform and useless for a
+ * coordination one: at any plausible radius only one of those ten pairs is a
+ * neighbour of another. These four are genuine administrations with accurate
+ * coordinates, and they sit across real ridges from one another - Torgnon and
+ * Ayas are 13 km apart in a straight line but roughly an hour by road, because
+ * the only way between them is down to the valley floor and back up. That is
+ * exactly the problem the feature exists to address, so the seed had to
+ * contain it.
+ *
+ * Recorded as a design decision in `docs/design-decisions.md`; nothing here is
+ * invented, and no reviews or ratings are attributed to these comuni.
+ */
 /** @type {Array<{name:string, region:string, province:string, contactEmail:string, phone:string}>} */
 export const municipalities = [
   {
@@ -82,6 +100,34 @@ export const municipalities = [
     contactEmail: 'info@appenninounione.it',
     phone: '+39 0541 110110',
   },
+  {
+    name: 'Comune di Valtournenche',
+    region: 'Aosta Valley',
+    province: 'Aosta',
+    contactEmail: 'info@comune.valtournenche.ao.it',
+    phone: '+39 0166 92101',
+  },
+  {
+    name: 'Comune di Torgnon',
+    region: 'Aosta Valley',
+    province: 'Aosta',
+    contactEmail: 'info@comune.torgnon.ao.it',
+    phone: '+39 0166 540213',
+  },
+  {
+    name: 'Comune di Antey-Saint-Andre',
+    region: 'Aosta Valley',
+    province: 'Aosta',
+    contactEmail: 'info@comune.antey-saint-andre.ao.it',
+    phone: '+39 0166 548209',
+  },
+  {
+    name: 'Comune di Ayas',
+    region: 'Aosta Valley',
+    province: 'Aosta',
+    contactEmail: 'info@comune.ayas.ao.it',
+    phone: '+39 0125 307113',
+  },
 ];
 
 /** The 8 thematic categories with matching lucide-react icon names. */
@@ -97,7 +143,7 @@ export const categories = [
 ];
 
 /**
- * 20 real Italian mountain villages. `municipality` references a municipality
+* 24 real Italian mountain villages. `municipality` references a municipality
  * by name (resolved to an ObjectId by the seed script).
  */
 export const villages = [
@@ -380,5 +426,282 @@ export const villages = [
     description:
       'Cerreto Alpi is a compact stone village in the high Reggio Emilia Apennines, within the Tuscan-Emilian Apennine National Park and its UNESCO Biosphere Reserve. Traditionally a community of woodcutters and charcoal-burners, it retains dry-stone houses and a strong tie to its beech and chestnut forests. It serves as a base for hiking towards the Cerreto Pass, the Lagoni lakes and the ridge trails of the Apennine watershed.',
     stats: { hotels: 2, shops: 3 },
+  },
+  {
+    name: 'Valtournenche',
+    slug: 'valtournenche',
+    municipality: 'Comune di Valtournenche',
+    region: 'Aosta Valley',
+    province: 'Aosta',
+    location: { lat: 45.8747, lng: 7.6236 },
+    altitude: 1524,
+    population: 2100,
+    shortDescription: 'The historic guides’ village beneath the Matterhorn.',
+    description:
+      'Valtournenche gave the Alps some of its earliest professional mountain guides, and the profession still shapes the village: the guides’ society founded here in 1865 remains active, and the Matterhorn stands at the head of the valley above it. The village is the administrative centre of the valley that also holds Breuil-Cervinia, and serves as the working settlement behind the better-known resort — shops, workshops and the guides’ office rather than hotels alone.',
+    stats: { hotels: 24, shops: 30 },
+  },
+  {
+    name: 'Torgnon',
+    slug: 'torgnon',
+    municipality: 'Comune di Torgnon',
+    region: 'Aosta Valley',
+    province: 'Aosta',
+    location: { lat: 45.8442, lng: 7.5625 },
+    altitude: 1489,
+    population: 540,
+    shortDescription: 'A sunny terrace of hamlets above the Valtournenche.',
+    description:
+      'Torgnon sits on a broad south-facing shelf above the Valtournenche, scattered across a dozen small hamlets rather than gathered into one centre. It is known for cross-country skiing on the Chaleby plateau and for the Petit Monde hamlet, whose rural buildings and chapel have been carefully restored. Though barely thirteen kilometres from Ayas as the crow flies, the ridge between them means the journey by road runs down to the valley floor and back up.',
+    stats: { hotels: 8, shops: 6 },
+  },
+  {
+    name: 'Antey-Saint-André',
+    slug: 'antey-saint-andre',
+    municipality: 'Comune di Antey-Saint-Andre',
+    region: 'Aosta Valley',
+    province: 'Aosta',
+    location: { lat: 45.8073, lng: 7.5906 },
+    altitude: 1080,
+    population: 620,
+    shortDescription: 'The valley crossroads where the Valtournenche opens out.',
+    description:
+      'Antey-Saint-André lies where the Valtournenche widens into a green basin, and functions as the junction of the valley: the roads to Torgnon, to La Magdeleine and up towards Cervinia all meet here. Its lower altitude and mild position make it a year-round settlement rather than a seasonal one, with meadows, larch woods and the Marmore torrent running through the centre.',
+    stats: { hotels: 11, shops: 12 },
+  },
+  {
+    name: 'Champoluc',
+    slug: 'champoluc',
+    municipality: 'Comune di Ayas',
+    region: 'Aosta Valley',
+    province: 'Aosta',
+    location: { lat: 45.8319, lng: 7.7278 },
+    altitude: 1568,
+    population: 1350,
+    shortDescription: 'The main village of the Val d’Ayas, under Monte Rosa.',
+    description:
+      'Champoluc is the principal village of Ayas, at the head of a valley that runs north towards the Monte Rosa massif. The Walser communities who settled these upper valleys in the Middle Ages left their mark in the timber-and-stone houses of the surrounding hamlets. It is a walking and ski-touring base, connected over the ridges to Gressoney and Alagna by lift rather than by road.',
+    stats: { hotels: 30, shops: 22 },
+  },
+];
+
+/**
+ * Service taxonomy for inter-municipal coordination.
+ *
+ * A fixed vocabulary rather than free text: the regional-authority analytics
+ * aggregate declarations and requests across the whole territory, and free text
+ * does not aggregate. Each entry is a service one mountain comune could
+ * plausibly provide *to another comune* — not a product sold to a tourist.
+ */
+export const serviceTypes = [
+  // --- Mobility -------------------------------------------------------------
+  { slug: 'shuttle-transport', name: 'Shuttle & group transport', group: 'mobility', sortOrder: 1, icon: 'Bus',
+    description: 'Minibus or coach capacity for moving visitor groups between villages.' },
+  { slug: 'accessible-transport', name: 'Accessible transport', group: 'mobility', sortOrder: 2, icon: 'Accessibility',
+    description: 'Vehicles equipped for visitors with reduced mobility.' },
+  { slug: 'ev-charging', name: 'EV charging', group: 'mobility', sortOrder: 3, icon: 'Zap',
+    description: 'Public charging points available to visiting vehicles.' },
+  { slug: 'road-clearing', name: 'Snow clearing & road access', group: 'mobility', sortOrder: 4, icon: 'Snowflake',
+    description: 'Winter clearing capacity and seasonal road-status information.' },
+
+  // --- Expertise ------------------------------------------------------------
+  { slug: 'mountain-guide', name: 'Licensed mountain guide', group: 'expertise', sortOrder: 1, icon: 'Mountain',
+    description: 'Qualified guides for hiking, alpine routes or ski touring.' },
+  { slug: 'cultural-guide', name: 'Cultural & heritage guide', group: 'expertise', sortOrder: 2, icon: 'Landmark',
+    description: 'Guided visits to churches, museums and historic sites.' },
+  { slug: 'interpreter', name: 'Language support', group: 'expertise', sortOrder: 3, icon: 'Languages',
+    description: 'Staff or volunteers able to assist visitors in other languages.' },
+
+  // --- Facilities -----------------------------------------------------------
+  { slug: 'group-accommodation', name: 'Group accommodation', group: 'facilities', sortOrder: 1, icon: 'BedDouble',
+    description: 'Hostel, refuge or municipal lodging with capacity for a group.' },
+  { slug: 'meeting-space', name: 'Meeting & event space', group: 'facilities', sortOrder: 2, icon: 'Presentation',
+    description: 'Halls or rooms for events, briefings and gatherings.' },
+  { slug: 'equipment-rental', name: 'Equipment rental', group: 'facilities', sortOrder: 3, icon: 'Backpack',
+    description: 'Snowshoes, skis, bicycles or via ferrata equipment.' },
+  { slug: 'parking-area', name: 'Coach parking & staging', group: 'facilities', sortOrder: 4, icon: 'SquareParking',
+    description: 'Space for coaches and for staging group arrivals.' },
+
+  // --- Supply ---------------------------------------------------------------
+  { slug: 'local-produce', name: 'Local produce', group: 'supply', sortOrder: 1, icon: 'Wheat',
+    description: 'Cheese, cured meats, honey and other produce in quantity.' },
+  { slug: 'artisan-crafts', name: 'Artisan crafts', group: 'supply', sortOrder: 2, icon: 'Hammer',
+    description: 'Workshops and makers able to host or supply visitors.' },
+
+  // --- Emergency & care -----------------------------------------------------
+  { slug: 'first-aid', name: 'First aid & medical presence', group: 'emergency', sortOrder: 1, icon: 'HeartPulse',
+    description: 'Staffed first-aid post, nurse or doctor available during an event.' },
+  // Deliberately a *liaison contact*, not a dispatch channel: real-time emergency
+  // services are outside this project's scope and the description must not imply
+  // the platform plays any part in an actual rescue.
+  { slug: 'mountain-rescue', name: 'Mountain rescue liaison', group: 'emergency', sortOrder: 2, icon: 'LifeBuoy',
+    description: 'Named contact point for the local rescue organisation. Not an emergency channel.' },
+];
+
+/**
+ * Declared capabilities per municipality, by service slug.
+ *
+ * Plausible rather than exhaustive. The Valtournenche cluster is well populated
+ * so the feature demonstrates properly, while the scattered municipalities have
+ * only a few each — which is what gives the regional authority's coverage matrix
+ * genuine gaps to show rather than a uniformly full grid.
+ */
+export const capabilitySeed = [
+  { municipality: 'Comune di Valtournenche', services: [
+    { slug: 'mountain-guide', description: 'Societa delle Guide del Cervino — alpine and ski-touring guides, year round.', contactName: 'Ufficio Guide' },
+    { slug: 'shuttle-transport', description: 'Two 19-seat minibuses, available outside school-transport hours.', contactName: 'Ufficio Tecnico' },
+    { slug: 'first-aid', description: 'Seasonal first-aid post staffed through the winter and summer seasons.' },
+    { slug: 'equipment-rental', description: 'Snowshoe and via ferrata kit through the guides office.' },
+    { slug: 'mountain-rescue', description: 'Liaison with the Soccorso Alpino Valdostano station.' },
+  ] },
+  { municipality: 'Comune di Torgnon', services: [
+    { slug: 'group-accommodation', description: 'Municipal hostel at Chaleby, 38 beds, open December to April and June to September.' },
+    { slug: 'equipment-rental', description: 'Cross-country ski and snowshoe hire at the Chaleby centre.' },
+    { slug: 'meeting-space', description: 'Sala polivalente, seats 90, projector and kitchen.' },
+    { slug: 'local-produce', description: 'Fontina and Toma producers in the hamlets; introductions arranged.' },
+  ] },
+  { municipality: 'Comune di Antey-Saint-Andre', services: [
+    { slug: 'parking-area', description: 'Coach parking for six vehicles at the valley junction, with turning space.' },
+    { slug: 'ev-charging', description: 'Four public charging points beside the municipal car park.' },
+    { slug: 'interpreter', description: 'French and English speakers among municipal staff; German on request.' },
+    { slug: 'accessible-transport', description: 'One wheelchair-accessible vehicle, shared with the social services.' },
+  ] },
+  { municipality: 'Comune di Ayas', services: [
+    { slug: 'mountain-guide', description: 'Monte Rosa guides, including Walser cultural walks.' },
+    { slug: 'cultural-guide', description: 'Walser heritage itineraries in the upper hamlets.' },
+    { slug: 'group-accommodation', description: 'Two refuges reachable on foot, plus a municipal dormitory in Champoluc.' },
+    { slug: 'artisan-crafts', description: 'Woodcarving workshops open to visiting groups.' },
+    { slug: 'road-clearing', description: 'Municipal clearing fleet; can assist neighbouring roads by agreement.' },
+  ] },
+  { municipality: "Unione Comuni Valle d'Aosta", services: [
+    { slug: 'shuttle-transport', description: 'Cable-car shuttle coordination for Chamois arrivals.' },
+    { slug: 'cultural-guide', description: 'Guided visits to the valley chapels and rural museums.' },
+    { slug: 'local-produce', description: 'Alpine cheese producers across the member comuni.' },
+  ] },
+  { municipality: 'Unione Montana Valli del Piemonte', services: [
+    { slug: 'group-accommodation', description: 'Former school converted to a 24-bed group lodge.' },
+    { slug: 'meeting-space', description: 'Council chamber available to neighbouring comuni for joint sessions.' },
+  ] },
+  { municipality: 'Unione Montana Valli Occitane', services: [
+    { slug: 'cultural-guide', description: 'Occitan-language cultural itineraries.' },
+    { slug: 'artisan-crafts', description: 'Stone and wood workshops in the Maira valley.' },
+    { slug: 'local-produce', description: 'Mountain honey and Castelmagno producers.' },
+  ] },
+  { municipality: 'Comunità Montana Gran Sasso–Alto Sangro', services: [
+    { slug: 'mountain-guide', description: 'Guides for the Gran Sasso and Maiella massifs.' },
+    { slug: 'equipment-rental', description: 'Snowshoes and crampons at the Scanno visitor point.' },
+  ] },
+  { municipality: 'Comunità di Montagna della Carnia', services: [
+    { slug: 'meeting-space', description: 'Conference room in the comunità headquarters, seats 120.' },
+    { slug: 'interpreter', description: 'Friulian, German and Slovene speakers available.' },
+  ] },
+  { municipality: 'Unione Montana Agordina e Giudicarie', services: [
+    { slug: 'group-accommodation', description: 'Dolomite refuges with group booking through the union office.' },
+    { slug: 'road-clearing', description: 'Winter clearing across the member comuni.' },
+  ] },
+];
+
+/**
+ * Coordination requests, spread across every lifecycle state so each screen and
+ * each authority statistic has something real to show.
+ *
+ * `daysAgo` positions the request in the past; `respondents` are the neighbours
+ * who answered and how. The unmet and expired entries matter most: they are what
+ * the regional authority's evidence of missing capability is actually built from.
+ */
+export const requestSeed = [
+  {
+    from: 'Comune di Torgnon', service: 'shuttle-transport', daysAgo: 21,
+    title: 'Transport for 40 walkers from the valley floor',
+    details: 'A walking group of about forty arrives by coach at Antey and needs moving up to Chaleby in two shifts on the Saturday morning. We have no vehicle of our own that size.',
+    peopleCount: 40, radiusKm: 60, status: 'fulfilled', fulfilledBy: 'Comune di Valtournenche',
+    closedNote: 'Valtournenche sent both minibuses. Arranged directly with their technical office.',
+    respondents: [
+      { municipality: 'Comune di Valtournenche', type: 'offer', message: 'Both 19-seat minibuses are free that morning. Call the Ufficio Tecnico to fix the times.' },
+      { municipality: "Unione Comuni Valle d'Aosta", type: 'decline', message: 'Our shuttle is committed to the cable-car service that weekend.' },
+    ],
+  },
+  {
+    from: 'Comune di Ayas', service: 'first-aid', daysAgo: 14,
+    title: 'First-aid presence for the Walser festival',
+    details: 'Two days of events in the upper hamlets, several hundred visitors expected. We need a staffed first-aid point; ours is only available in the ski season.',
+    peopleCount: 300, radiusKm: 60, status: 'open',
+    respondents: [
+      { municipality: 'Comune di Valtournenche', type: 'partial', message: 'We can cover the Saturday with one qualified volunteer, but not the Sunday.' },
+    ],
+  },
+  {
+    from: 'Comune di Valtournenche', service: 'group-accommodation', daysAgo: 30,
+    title: 'Beds for 30 during the guides centenary',
+    details: 'Our accommodation is full for the centenary weekend and we are short about thirty beds for visiting guide delegations.',
+    peopleCount: 30, radiusKm: 60, status: 'fulfilled', fulfilledBy: 'Comune di Torgnon',
+    closedNote: 'Torgnon hostel took the delegation. Ayas offered the dormitory as a fallback.',
+    respondents: [
+      { municipality: 'Comune di Torgnon', type: 'offer', message: 'The Chaleby hostel has 38 beds and is free that weekend.' },
+      { municipality: 'Comune di Ayas', type: 'offer', message: 'The Champoluc dormitory could take up to 20 if you need a second site.' },
+    ],
+  },
+  {
+    from: 'Comune di Antey-Saint-Andre', service: 'accessible-transport', daysAgo: 45,
+    title: 'Accessible vehicle for a visiting group',
+    details: 'A group including three wheelchair users is visiting for four days. Our own accessible vehicle is committed to social services that week.',
+    peopleCount: 12, radiusKm: 60, status: 'unmet',
+    closedNote: 'No neighbouring comune has a second accessible vehicle. Hired privately from Aosta at considerable cost.',
+    respondents: [
+      { municipality: 'Comune di Valtournenche', type: 'decline', message: 'We do not have an accessible vehicle.' },
+      { municipality: 'Comune di Torgnon', type: 'decline', message: 'Nothing suitable here either, sorry.' },
+    ],
+  },
+  {
+    from: 'Comune di Torgnon', service: 'interpreter', daysAgo: 60,
+    title: 'German-speaking guide for a visiting delegation',
+    details: 'A delegation from Tyrol is visiting the Petit Monde restoration and we have nobody able to present it in German.',
+    peopleCount: 15, radiusKm: 60, status: 'expired',
+    respondents: [],
+  },
+  {
+    from: 'Comune di Ayas', service: 'equipment-rental', daysAgo: 10,
+    title: 'Snowshoes for a school group of 25',
+    details: 'A school group arrives in February and our hire stock only covers about fifteen. Looking to borrow or hire ten more pairs for the week.',
+    peopleCount: 25, radiusKm: 60, status: 'open',
+    respondents: [
+      { municipality: 'Comune di Torgnon', type: 'offer', message: 'We can lend ten pairs from the Chaleby centre that week. Collection from the desk.' },
+      { municipality: 'Comune di Valtournenche', type: 'partial', message: 'We could add four pairs of the smaller sizes if you need them.' },
+    ],
+  },
+  {
+    from: 'Comune di Valtournenche', service: 'meeting-space', daysAgo: 5,
+    title: 'Hall for a joint valley tourism meeting',
+    details: 'Hosting the inter-comunale tourism meeting in March; we need a room for about eighty with a projector.',
+    peopleCount: 80, radiusKm: 60, status: 'open',
+    respondents: [],
+  },
+  {
+    from: 'Comune di Antey-Saint-Andre', service: 'road-clearing', daysAgo: 70,
+    title: 'Assistance clearing the Torgnon road after heavy snow',
+    details: 'Our clearing vehicle is out of service and the road up to Torgnon needs a pass before the weekend.',
+    radiusKm: 60, status: 'fulfilled', fulfilledBy: 'Comune di Ayas',
+    closedNote: 'Ayas sent a vehicle the same afternoon.',
+    respondents: [
+      { municipality: 'Comune di Ayas', type: 'offer', message: 'We can send a vehicle over on Friday afternoon.' },
+    ],
+  },
+  {
+    from: 'Comune di Torgnon', service: 'accessible-transport', daysAgo: 90,
+    title: 'Accessible transport for two visitors',
+    details: 'Two visitors with reduced mobility staying a week and needing transfers to the valley floor.',
+    peopleCount: 2, radiusKm: 60, status: 'unmet',
+    closedNote: 'Again nothing available in the valley. This is the second time this year.',
+    respondents: [
+      { municipality: 'Comune di Antey-Saint-Andre', type: 'decline', message: 'Our vehicle is committed to social services on those dates.' },
+    ],
+  },
+  {
+    from: 'Comune di Ayas', service: 'cultural-guide', daysAgo: 3,
+    title: 'Cultural guide for a heritage weekend',
+    details: 'Looking for a guide able to cover both the Walser hamlets and the chapels lower in the valley over one weekend.',
+    peopleCount: 25, radiusKm: 60, status: 'cancelled',
+    closedNote: 'The visiting group cancelled their trip, so the need went away.',
+    respondents: [],
   },
 ];

@@ -2,7 +2,6 @@ import Village, { toGeoPoint } from '../models/Village.js';
 import Attraction from '../models/Attraction.js';
 import Event from '../models/Event.js';
 import Comment from '../models/Comment.js';
-import Category from '../models/Category.js';
 import AppError from '../utils/AppError.js';
 import catchAsync from '../utils/catchAsync.js';
 import { sendSuccess } from '../utils/apiResponse.js';
@@ -10,6 +9,15 @@ import { buildMeta } from '../utils/pagination.js';
 import { generateUniqueSlug } from '../utils/slug.js';
 import { pick } from '../utils/pick.js';
 import APIFeatures from '../utils/APIFeatures.js';
+import { buildVillageFilter } from '../utils/villageFilter.js';
+
+/**
+ * Upper bound on markers returned by `/villages/map`. The endpoint is
+ * unpaginated on purpose, so it needs *some* ceiling; 500 is far above the
+ * platform's twenty villages and is documented in `API.md` rather than being
+ * a silent truncation.
+ */
+const MAP_MARKER_CAP = 500;
 
 /** Public `sort` value → Mongo sort string. */
 const SORT_MAP = {
@@ -26,44 +34,7 @@ const SORT_MAP = {
  * may pass `includeUnpublished=true` to also receive unpublished ones.
  */
 export const listVillages = catchAsync(async (req, res) => {
-  const { search, region, province, minRating, category, includeUnpublished } = req.query;
-  const filter = {};
-
-  // Visibility: published-only unless an authorised user opts in.
-  const wantsUnpublished = includeUnpublished === 'true';
-  if (wantsUnpublished && req.user?.role === 'admin') {
-    // no isPublished constraint
-  } else if (wantsUnpublished && req.user?.role === 'officer' && req.user.municipalityId) {
-    filter.$or = [{ isPublished: true }, { municipalityId: req.user.municipalityId }];
-  } else {
-    filter.isPublished = true;
-  }
-
-  if (search) {
-    const rx = new RegExp(search, 'i');
-    // Combine with any existing $or (visibility) via $and to keep both.
-    const searchOr = [{ name: rx }, { description: rx }];
-    if (filter.$or) {
-      filter.$and = [{ $or: filter.$or }, { $or: searchOr }];
-      delete filter.$or;
-    } else {
-      filter.$or = searchOr;
-    }
-  }
-  if (region) filter.region = region;
-  if (province) filter.province = province;
-  if (minRating) filter.ratingAverage = { $gte: Number(minRating) };
-
-  // `category` → villages that have at least one attraction in that category.
-  if (category) {
-    const catDoc = await Category.findOne(
-      /^[0-9a-fA-F]{24}$/.test(category) ? { _id: category } : { slug: category }
-    );
-    const villageIds = catDoc
-      ? await Attraction.find({ categoryId: catDoc._id }).distinct('villageId')
-      : [];
-    filter._id = { $in: villageIds };
-  }
+  const filter = await buildVillageFilter(req);
 
   const total = await Village.countDocuments(filter);
   const features = new APIFeatures(Village.find(), req.query)
@@ -78,11 +49,19 @@ export const listVillages = catchAsync(async (req, res) => {
 /**
  * GET /api/villages/map — lightweight payload for the Leaflet map.
  * Never returns descriptions or full image arrays.
+ *
+ * Accepts the same filters as `GET /api/villages` (search, region, province,
+ * minRating, category) so the markers match the grid. Deliberately *not*
+ * paginated: the grid shows one page, but a user who has filtered to a region
+ * wants every match on the map, not the nine that happen to be on screen. The
+ * projection keeps that affordable — five scalar fields per village, no
+ * descriptions, no image arrays, no populate.
  */
-export const villagesForMap = catchAsync(async (_req, res) => {
-  const villages = await Village.find({ isPublished: true }).select(
-    '_id name slug location ratingAverage coverImage'
-  );
+export const villagesForMap = catchAsync(async (req, res) => {
+  const filter = await buildVillageFilter(req);
+  const villages = await Village.find(filter)
+    .select('_id name slug location ratingAverage coverImage')
+    .limit(MAP_MARKER_CAP);
   sendSuccess(res, villages);
 });
 

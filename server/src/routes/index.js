@@ -9,6 +9,12 @@ import officerRequestRoutes from './officerRequestRoutes.js';
 import statsRoutes from './statsRoutes.js';
 import meRoutes from './meRoutes.js';
 import routeRoutes from './routeRoutes.js';
+import supportRoutes from './supportRoutes.js';
+import {
+  serviceTypeRouter,
+  capabilityRouter,
+  coordinationRouter,
+} from './coordinationRoutes.js';
 import { attractionItemRouter } from './attractionRoutes.js';
 import { eventTopRouter } from './eventRoutes.js';
 import { commentTopRouter } from './commentRoutes.js';
@@ -41,5 +47,9 @@ router.use('/officer-requests', officerRequestRoutes);
 router.use('/stats', statsRoutes);
 router.use('/me', meRoutes);
 router.use('/routes', routeRoutes);
+router.use('/support', supportRoutes);
+router.use('/service-types', serviceTypeRouter);
+router.use('/capabilities', capabilityRouter);
+router.use('/coordination', coordinationRouter);
 
 export default router;

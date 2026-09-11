@@ -100,6 +100,15 @@ Authorization: Bearer {{adminToken}}
 ### Map payload (lightweight)
 GET {{baseUrl}}/villages/map
 
+### Map payload, filtered — must return the same set as the list below
+GET {{baseUrl}}/villages/map?region=Abruzzo&minRating=4
+
+### …the matching list request, for comparison
+GET {{baseUrl}}/villages?region=Abruzzo&minRating=4&limit=50
+
+### Map payload, filter matching nothing — expect data: []
+GET {{baseUrl}}/villages/map?region=Abruzzo&minRating=5
+
 ### Detail by slug
 # @name villageDetail
 GET {{baseUrl}}/villages/scanno
@@ -516,6 +525,315 @@ Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 { "name": "" }
+
+### ----------------------------------------------------------------------
+### Support — public submission, admin triage
+### ----------------------------------------------------------------------
+
+### Send a support message (public; no auth needed)
+# @name supportMessage
+POST {{baseUrl}}/support
+Content-Type: application/json
+
+{ "email": "visitor@example.com",
+  "message": "The altitude shown for one of the villages looks wrong." }
+
+@supportId = {{supportMessage.response.body.data._id}}
+
+### Same, while signed in — the message is attributed to the account
+POST {{baseUrl}}/support
+Authorization: Bearer {{touristToken}}
+Content-Type: application/json
+
+{ "email": "sara@example.com", "message": "Sent while authenticated." }
+
+### Validation: empty message (422)
+POST {{baseUrl}}/support
+Content-Type: application/json
+
+{ "email": "visitor@example.com", "message": "" }
+
+### Inbox without a token (401)
+GET {{baseUrl}}/support
+
+### Inbox as a tourist (403 — admin only)
+GET {{baseUrl}}/support
+Authorization: Bearer {{touristToken}}
+
+### Inbox as admin — newest first, paginated
+GET {{baseUrl}}/support
+Authorization: Bearer {{adminToken}}
+
+### Inbox filtered to unhandled messages
+GET {{baseUrl}}/support?status=new
+Authorization: Bearer {{adminToken}}
+
+### Mark handled (stamps handledBy / handledAt)
+PATCH {{baseUrl}}/support/{{supportId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "status": "handled" }
+
+### Reopen it
+PATCH {{baseUrl}}/support/{{supportId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "status": "new" }
+
+### Delete it
+DELETE {{baseUrl}}/support/{{supportId}}
+Authorization: Bearer {{adminToken}}
+
+### ----------------------------------------------------------------------
+
+### Grab a municipality id and the shuttle service type for the block below
+# @name municipalitiesList
+GET {{baseUrl}}/municipalities
+
+###
+@municipalityId = {{municipalitiesList.response.body.data.0._id}}
+
+# The shuttle type is the first of the mobility group in the seeded taxonomy.
+# @name shuttleLookup
+GET {{baseUrl}}/service-types
+
+###
+@shuttleTypeId = {{shuttleLookup.response.body.data.0._id}}
+
+### ----------------------------------------------------------------------
+### Inter-municipal coordination
+### Officers of the Valtournenche/Ayas cluster are the ones with neighbours.
+### ----------------------------------------------------------------------
+
+# @name loginTorgnon
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "officer.torgnon@mountainable.it", "password": "{{password}}" }
+
+###
+# @name loginValtournenche
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "officer.valtournenche@mountainable.it", "password": "{{password}}" }
+
+###
+@torgnonToken = {{loginTorgnon.response.body.data.token}}
+@valtournencheToken = {{loginValtournenche.response.body.data.token}}
+
+### Service taxonomy (public)
+# @name serviceTypes
+GET {{baseUrl}}/service-types
+
+###
+@serviceTypeId = {{serviceTypes.response.body.data.0._id}}
+
+### Taxonomy including retired types (admin view uses this)
+GET {{baseUrl}}/service-types?includeInactive=true
+
+### Create a service type (admin)
+POST {{baseUrl}}/service-types
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "name": "Test service", "group": "facilities", "description": "Created by the test file.", "icon": "Tent" }
+
+### Delete a service type that is in use (expect 409 — retire it instead)
+DELETE {{baseUrl}}/service-types/{{serviceTypeId}}
+Authorization: Bearer {{adminToken}}
+
+### --- Declared capabilities -------------------------------------------------
+
+### The whole directory (public — you do not need an account to browse it)
+GET {{baseUrl}}/capabilities
+
+### One municipality's declarations
+GET {{baseUrl}}/capabilities?municipalityId={{municipalityId}}
+
+### My own municipality's declarations (officer)
+GET {{baseUrl}}/capabilities/mine
+Authorization: Bearer {{torgnonToken}}
+
+### Declare a service (municipalityId comes from the token, never the body)
+# @name declareCapability
+POST {{baseUrl}}/capabilities
+Authorization: Bearer {{torgnonToken}}
+Content-Type: application/json
+
+{ "serviceTypeId": "{{serviceTypeId}}",
+  "description": "Declared from the API test file.",
+  "contactName": "Ufficio Tecnico" }
+
+###
+@capabilityId = {{declareCapability.response.body.data._id}}
+
+### Amend it
+PATCH {{baseUrl}}/capabilities/{{capabilityId}}
+Authorization: Bearer {{torgnonToken}}
+Content-Type: application/json
+
+{ "description": "Amended from the API test file." }
+
+### Confirm it is still true (refreshes the stale flag)
+POST {{baseUrl}}/capabilities/{{capabilityId}}/confirm
+Authorization: Bearer {{torgnonToken}}
+
+### Another municipality tries to amend it (expect 403 — ownsCapability)
+PATCH {{baseUrl}}/capabilities/{{capabilityId}}
+Authorization: Bearer {{valtournencheToken}}
+Content-Type: application/json
+
+{ "description": "Should be refused." }
+
+### Withdraw it
+DELETE {{baseUrl}}/capabilities/{{capabilityId}}
+Authorization: Bearer {{torgnonToken}}
+
+### --- Candidate selection ---------------------------------------------------
+
+### Who would receive a request? (one OSRM table call, ranked by travel time)
+# @name candidates
+GET {{baseUrl}}/coordination/candidates?radiusKm=60
+Authorization: Bearer {{torgnonToken}}
+
+### Narrowed to a service — only municipalities that declared it
+GET {{baseUrl}}/coordination/candidates?radiusKm=60&serviceTypeId={{shuttleTypeId}}
+Authorization: Bearer {{torgnonToken}}
+
+### A radius that matches nobody — `nearest` is returned as suggestions only
+GET {{baseUrl}}/coordination/candidates?radiusKm=1
+Authorization: Bearer {{torgnonToken}}
+
+### --- Requests ---------------------------------------------------------------
+
+### Raise a request (recipients are resolved server-side and frozen)
+# @name createRequest
+POST {{baseUrl}}/coordination/requests
+Authorization: Bearer {{torgnonToken}}
+Content-Type: application/json
+
+{ "serviceTypeId": "{{shuttleTypeId}}",
+  "title": "Transport for a visiting group",
+  "details": "Raised from the API test file.",
+  "peopleCount": 30,
+  "radiusKm": 60 }
+
+###
+@requestId = {{createRequest.response.body.data._id}}
+
+### Our outgoing requests
+GET {{baseUrl}}/coordination/requests?box=outgoing
+Authorization: Bearer {{torgnonToken}}
+
+### Requests addressed to us
+GET {{baseUrl}}/coordination/requests?box=incoming
+Authorization: Bearer {{valtournencheToken}}
+
+### Detail with responses
+GET {{baseUrl}}/coordination/requests/{{requestId}}
+Authorization: Bearer {{torgnonToken}}
+
+### Sidebar badge counts
+GET {{baseUrl}}/coordination/inbox
+Authorization: Bearer {{valtournencheToken}}
+
+### A recipient offers
+POST {{baseUrl}}/coordination/requests/{{requestId}}/responses
+Authorization: Bearer {{valtournencheToken}}
+Content-Type: application/json
+
+{ "type": "offer",
+  "message": "Both minibuses are free that morning.",
+  "contactName": "Ufficio Tecnico", "contactPhone": "+39 0166 92101" }
+
+### A partial offer is a first-class answer, not a variant of yes
+POST {{baseUrl}}/coordination/requests/{{requestId}}/responses
+Authorization: Bearer {{valtournencheToken}}
+Content-Type: application/json
+
+{ "type": "partial", "message": "Only one vehicle, and only on the Saturday." }
+
+### The requester tries to respond to their own request (expect 403)
+POST {{baseUrl}}/coordination/requests/{{requestId}}/responses
+Authorization: Bearer {{torgnonToken}}
+Content-Type: application/json
+
+{ "type": "offer" }
+
+### A municipality that was not a recipient responds (expect 403)
+POST {{baseUrl}}/coordination/requests/{{requestId}}/responses
+Authorization: Bearer {{officerToken}}
+Content-Type: application/json
+
+{ "type": "offer" }
+
+### A recipient tries to close someone else's request (expect 403 — ownsRequest)
+PATCH {{baseUrl}}/coordination/requests/{{requestId}}
+Authorization: Bearer {{valtournencheToken}}
+Content-Type: application/json
+
+{ "status": "fulfilled" }
+
+### Naming a municipality that was not a recipient (expect 422)
+PATCH {{baseUrl}}/coordination/requests/{{requestId}}
+Authorization: Bearer {{torgnonToken}}
+Content-Type: application/json
+
+{ "status": "fulfilled", "fulfilledByMunicipalityId": "000000000000000000000000" }
+
+### Asserting `expired` as a client (expect 422 — it is a system transition)
+PATCH {{baseUrl}}/coordination/requests/{{requestId}}
+Authorization: Bearer {{torgnonToken}}
+Content-Type: application/json
+
+{ "status": "expired" }
+
+### The requester records the outcome
+PATCH {{baseUrl}}/coordination/requests/{{requestId}}
+Authorization: Bearer {{torgnonToken}}
+Content-Type: application/json
+
+{ "status": "fulfilled", "closedNote": "Arranged directly with their technical office." }
+
+### Responding to a closed request (expect 409)
+POST {{baseUrl}}/coordination/requests/{{requestId}}/responses
+Authorization: Bearer {{valtournencheToken}}
+Content-Type: application/json
+
+{ "type": "offer" }
+
+### --- Coordination statistics (authority / admin) ----------------------------
+
+### KPI cards
+GET {{baseUrl}}/coordination/stats/overview
+Authorization: Bearer {{authorityToken}}
+
+### Capability coverage: service type x region
+GET {{baseUrl}}/coordination/stats/coverage
+Authorization: Bearer {{authorityToken}}
+
+### What was sought, and whether it was met
+GET {{baseUrl}}/coordination/stats/demand
+Authorization: Bearer {{authorityToken}}
+
+### Demand against declared supply — the investment-priority list
+GET {{baseUrl}}/coordination/stats/gaps
+Authorization: Bearer {{authorityToken}}
+
+### Response behaviour: no capacity, or no participation?
+GET {{baseUrl}}/coordination/stats/engagement
+Authorization: Bearer {{authorityToken}}
+
+### Municipalities coordination cannot help
+GET {{baseUrl}}/coordination/stats/isolation?thresholdKm=60
+Authorization: Bearer {{authorityToken}}
+
+### An officer reading the territorial statistics (expect 403)
+GET {{baseUrl}}/coordination/stats/demand
+Authorization: Bearer {{torgnonToken}}
 
 ### Unknown route (404)
 GET {{baseUrl}}/this-route-does-not-exist
