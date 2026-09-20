@@ -126,6 +126,7 @@ export default function VillageDetailPage() {
               )}
             </div>
           )}
+          <ReviewsSection village={village} onRatingChange={refetch} />
         </div>
 
         <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start">
@@ -134,7 +135,7 @@ export default function VillageDetailPage() {
       </div>
 
       {/* Reviews */}
-      <ReviewsSection village={village} onRatingChange={refetch} />
+      
     </Container>
   );
 }

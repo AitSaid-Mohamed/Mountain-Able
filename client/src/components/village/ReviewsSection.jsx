@@ -101,7 +101,7 @@ export default function ReviewsSection({ village, onRatingChange }) {
         <span className="h-px flex-1 bg-ink/15" aria-hidden="true" />
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[280px_1fr]">
+      <div className="mt-6 grid gap-6 ">
         {/* Average + distribution */}
         <Card className="h-fit p-6 text-center">
           <div className="text-display leading-none text-ink">

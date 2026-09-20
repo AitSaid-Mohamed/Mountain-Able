@@ -7,7 +7,7 @@ async function start() {
   try {
     await connectDB();
     const app = createApp();
-    app.listen(config.port, () => {
+    app.listen(config.port, '0.0.0.0', () => {
       console.log(`🚀 Mountain-Able API running on http://localhost:${config.port} (${config.nodeEnv})`);
     });
   } catch (err) {

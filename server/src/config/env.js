@@ -29,6 +29,8 @@ const config = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
   seedPassword: process.env.SEED_PASSWORD ?? 'Password123!',
   clientOrigin: process.env.CLIENT_ORIGIN ?? 'http://localhost:5173',
+  // clientOrigin: process.env.CLIENT_ORIGIN ?? 'http://192.168.1.92:5173',
+
   uploadDir: process.env.UPLOAD_DIR ?? 'uploads',
 };
 
