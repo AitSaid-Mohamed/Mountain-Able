@@ -5,6 +5,7 @@ import catchAsync from '../utils/catchAsync.js';
 import { signToken } from '../utils/jwt.js';
 import { sendSuccess } from '../utils/apiResponse.js';
 import { pick } from '../utils/pick.js';
+import { storeImage } from '../services/imageStore.js';
 
 /** Fields a user is allowed to change on their own profile. */
 const EDITABLE_PROFILE_FIELDS = ['firstName', 'lastName', 'avatar', 'phone', 'city'];
@@ -117,9 +118,10 @@ export const updateMe = catchAsync(async (req, res) => {
     if (req.body[field] !== undefined) updates[field] = req.body[field];
   }
 
-  // A newly uploaded avatar image (multipart) wins over any avatar text field
-  // and is stored as a local path, exactly like village images.
-  if (req.file) updates.avatar = `/uploads/${req.file.filename}`;
+  // A newly uploaded avatar image (multipart) wins over any avatar text field,
+  // and goes to the same store as village images — Cloudinary when configured,
+  // local disk otherwise.
+  if (req.file) updates.avatar = await storeImage(req.file, 'mountain-able/avatars');
 
   const user = await User.findByIdAndUpdate(req.user.id, updates, {
     new: true,

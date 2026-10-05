@@ -98,7 +98,7 @@ Document every new deviation in `docs/design-decisions.md` as you make it.
 ## Current status
 
 **Committed and working:**
-- Backend: 16 models, auth with token revocation, RBAC + ownership middleware, full REST API, statistics via aggregation pipelines, seed of 20 real Italian mountain villages
+- Backend: 16 models, auth with token revocation, RBAC + ownership middleware, full REST API, statistics via aggregation pipelines, seed of 24 real Italian mountain villages across 14 municipalities
 - Public frontend: home, villages listing with Leaflet map, village detail with reviews, events, about, signup, login modal
 - Dashboards: officer, admin, authority, plus a shared profile page
 - Tourist area `/my`: visited villages, favourites, saved routes, own reviews

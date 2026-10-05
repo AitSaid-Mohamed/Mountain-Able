@@ -8,6 +8,7 @@ import mongoSanitize from 'express-mongo-sanitize';
 
 import config from './config/env.js';
 import apiRouter from './routes/index.js';
+import AppError from './utils/AppError.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
 import { generalLimiter, authLimiter } from './middleware/rateLimit.js';
 
@@ -22,14 +23,48 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export function createApp() {
   const app = express();
 
-  // Trust the reverse proxy (needed for correct client IPs behind proxies,
-  // used by the rate limiter).
+  // Trust exactly one reverse proxy hop.
+  //
+  // Required in production: Render terminates TLS at its own proxy and forwards
+  // the real client address in `X-Forwarded-For`. Without this, Express reports
+  // the proxy's address for every request, so express-rate-limit would see all
+  // traffic as a single client and throttle the whole site once any one visitor
+  // exhausted a window. Recent versions of express-rate-limit also refuse to
+  // start when they detect a forwarded header with proxy trust disabled.
+  //
+  // The value is `1`, not `true`: trusting *all* proxies would let a client
+  // spoof `X-Forwarded-For` and evade the per-IP limiters entirely. One hop is
+  // what sits in front of the app on Render.
   app.set('trust proxy', 1);
 
   // --- Security middleware -------------------------------------------------
   // Allow images under /uploads to be embedded by the separate frontend origin.
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
-  app.use(cors({ origin: config.clientOrigin, credentials: true }));
+  // CORS against an explicit allow-list, never a reflected origin. The list
+  // comes from `CLIENT_ORIGIN` (comma-separated), so the deployed frontend and
+  // a local dev server can both be permitted.
+  //
+  // Requests with no `Origin` header are allowed through: that covers curl, the
+  // REST Client collection, health checks and server-to-server calls, none of
+  // which are browsers and none of which CORS is designed to protect.
+  app.use(
+    cors({
+      origin(origin, callback) {
+        if (!origin || config.clientOrigins.includes(origin)) return callback(null, true);
+        // A explicit 403 through the normal error envelope, rather than letting
+        // a bare Error surface as a 500. A misconfigured CLIENT_ORIGIN is the
+        // single likeliest deployment mistake, and this turns it into a
+        // self-explanatory response instead of an opaque server error.
+        callback(
+          new AppError(
+            `Origin ${origin} is not allowed. Add it to CLIENT_ORIGIN on the API.`,
+            403
+          )
+        );
+      },
+      credentials: true,
+    })
+  );
 
   // --- Body parsing --------------------------------------------------------
   app.use(express.json());

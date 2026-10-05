@@ -70,6 +70,19 @@ export default function Footer() {
           ))}
         </div>
       </Container>
+      {/* Demonstration notice.
+          The villages and municipalities in this build are real, but the
+          reviews, ratings and declared capabilities are sample content created
+          for an academic project. Without this, a visitor could reasonably read
+          a seeded review as a genuine opinion about a real place — which is the
+          one thing the project's honesty rule most clearly forbids. Kept
+          discreet rather than prominent: it is a disclosure, not a banner. */}
+      <div className="border-t border-white/20">
+        <Container className="py-4">
+          <p className="text-center text-small text-white/60">{t('footer.demoNotice')}</p>
+        </Container>
+      </div>
+
       <div className="border-t border-white/20">
         <Container className="flex flex-col items-center justify-between gap-2 py-5 text-small text-white/70 sm:flex-row">
           <span>

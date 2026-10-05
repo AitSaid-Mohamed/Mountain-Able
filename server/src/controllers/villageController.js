@@ -9,6 +9,7 @@ import { buildMeta } from '../utils/pagination.js';
 import { generateUniqueSlug } from '../utils/slug.js';
 import { pick } from '../utils/pick.js';
 import APIFeatures from '../utils/APIFeatures.js';
+import { storeImages, deleteImage } from '../services/imageStore.js';
 import { buildVillageFilter } from '../utils/villageFilter.js';
 
 /**
@@ -184,7 +185,11 @@ export const uploadVillageImages = catchAsync(async (req, res, next) => {
   if (!req.files || req.files.length === 0) {
     return next(new AppError('No image files were uploaded.', 400));
   }
-  const paths = req.files.map((f) => `/uploads/${f.filename}`);
+  // Persisted after `verifyImageBytes` has passed, so nothing spoofed is ever
+  // handed to the storage provider. Returns Cloudinary URLs when configured and
+  // `/uploads/...` paths otherwise; the client renders both, because `mediaUrl`
+  // passes absolute URLs through untouched.
+  const paths = await storeImages(req.files, 'mountain-able/villages');
   const village = await Village.findByIdAndUpdate(
     req.village._id,
     { $push: { images: { $each: paths } }, ...(req.village.coverImage ? {} : { coverImage: paths[0] }) },
@@ -201,6 +206,9 @@ export const deleteVillageImage = catchAsync(async (req, res, next) => {
     return next(new AppError('Image index out of range.', 400));
   }
   const [removed] = images.splice(idx, 1);
+  // Best-effort: an orphaned file is a smaller problem than a village whose
+  // image cannot be removed because the storage provider is unavailable.
+  await deleteImage(removed);
   const updates = { images };
   if (req.village.coverImage === removed) updates.coverImage = images[0] ?? null;
   const village = await Village.findByIdAndUpdate(req.village._id, updates, { new: true });

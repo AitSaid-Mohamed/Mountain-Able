@@ -20,14 +20,31 @@
  * start point and prints it — those printed coordinates are what the demo will
  * actually produce.
  *
- * Usage:  npm run warm-cache            (server must already be running)
- *         API_URL=http://host/api npm run warm-cache
+ * Usage:
+ *   npm run warm-cache                                  (local, server running)
+ *   npm run warm-cache -- https://mountain-able-api.onrender.com
+ *   API_URL=https://mountain-able-api.onrender.com/api npm run warm-cache
+ *
+ * The caches live in the *server's* memory, so this must be pointed at whichever
+ * server the demonstration will use. Warming localhost changes nothing about a
+ * deployed instance. A trailing `/api` is added when omitted, since the base URL
+ * a host displays does not include it.
  *
  * Exits non-zero if any journey fails to verify, so a failed warm-up is
  * noticed now rather than on stage. The journeys warmed, and the exact place
  * strings to type, are documented in docs/demo-script.md.
  */
-const API = process.env.API_URL ?? 'http://localhost:5000/api';
+/**
+ * Resolve the API base from, in order: the first CLI argument, `API_URL`, then
+ * localhost. Accepts a bare origin or a full base ending in `/api`.
+ */
+function resolveApiBase() {
+  const raw = process.argv[2] ?? process.env.API_URL ?? 'http://localhost:5000/api';
+  const trimmed = raw.trim().replace(/\/+$/, '');
+  return /\/api$/.test(trimmed) ? trimmed : `${trimmed}/api`;
+}
+
+const API = resolveApiBase();
 
 // Representative journeys between seeded villages, chosen for the demo:
 // real start towns, scenic/steep mountain routes, and generally good OSM

@@ -513,7 +513,7 @@ The **response envelope** is uniform. Successful responses take the shape `{ suc
 
 ## 6. Data model
 
-The database comprises fourteen collections. The tables below give each collection's fields, types and salient constraints as declared in `server/src/models/`.
+The database comprises sixteen collections. The tables below give each collection's fields, types and salient constraints as declared in `server/src/models/`.
 
 **User** (`User.js`)
 
