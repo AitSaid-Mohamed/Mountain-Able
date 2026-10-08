@@ -1442,7 +1442,7 @@ The extension also produced the feature's best evidence: the Torgnon–Valtourne
 
 ### 10.5 Documentation drift, and the self-audit that found it
 
-The three problems in this group share an origin and are best read together. Late in the project, the running application was audited **against the claims made in its own documentation** — endpoint by endpoint, guard by guard — specifically looking for places where the two disagreed. The audit is recorded in `docs/role-audit.md`. It found four contradictions.
+The problems in this group share an origin and are best read together. Late in the project, the running application was audited **against the claims made in its own documentation** — endpoint by endpoint, guard by guard — specifically looking for places where the two disagreed. The audit is recorded in `docs/role-audit.md`. It found six gaps that undermine a claim the project makes explicitly (`role-audit.md` §8.1), and separately one consistency defect in where authorisation lived. Five of the six were resolved — three in code, two by correcting the report — and the authorisation defect was fixed in code. One remains open: the officer feedback screen confirms a flagged review with *"Reported to admin for review"*, which overstates what happens. It is recorded as open rather than hidden.
 
 The motivating observation was that all the defects in §10.1 had passed unnoticed through ordinary development and manual testing, because each is invisible unless a specific question is asked. The audit asked those questions systematically.
 
@@ -1492,7 +1492,7 @@ The omission also made a specific claim false. The actors section introduced its
 
 #### 10.5.5 Why an internal audit matters
 
-Every one of these four had survived ordinary development, manual testing and a prior security audit. They survived because each is invisible unless a specific question is asked:
+Every one of these had survived ordinary development, manual testing and a prior security audit. They survived because each is invisible unless a specific question is asked:
 
 - *Is there a way for a real user to reach this?*
 - *Does this success message correspond to anything?*

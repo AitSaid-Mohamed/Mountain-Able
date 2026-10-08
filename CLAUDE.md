@@ -108,7 +108,7 @@ Document every new deviation in `docs/design-decisions.md` as you make it.
 - `npm run warm-cache` with a verification pass, `docs/demo-script.md`, 16 captioned screenshots
 - Public "claim your village" form at `/claim` — posts to `POST /api/users/officer-request`; entry points in the footer, on signup, and on each village page with the municipality pre-filled
 - Support inbox: public `POST /api/support` persists a message, admins triage it at `/admin/support`
-- `docs/role-audit.md` — a per-role audit of the running app against the report's claims; the four contradictions it found are fixed and documented in `docs/design-decisions.md`
+- `docs/role-audit.md` — a per-role audit of the running app against the report's claims. §8.1 lists six gaps that undermine an explicit claim: five are addressed (three in code, two by correcting the report) and one is still open — the officer feedback screen's "Reported to admin for review." toast overstates what happens. The four code fixes (those three, plus moving comment authorisation into `middleware/ownsComment.js`, §8.2 item 9) are documented in `docs/design-decisions.md`
 
 - Inter-municipal service coordination — capability directory, requests routed by real travel time, responses, and the territorial evidence the accumulated record yields. See `docs/coordination-design.md` (the approved proposal) and report §12.
 

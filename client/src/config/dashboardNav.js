@@ -78,3 +78,27 @@ export const DASHBOARDS = {
 
 /** Dashboard base path for a role (used by the header user menu). */
 export const dashboardBase = (role) => DASHBOARDS[role]?.base;
+
+/**
+ * Role-guarded areas outside the dashboards. Mirrors the `RequireRole` guards on
+ * `/my` and `/profile` in `App.jsx` — keep the two in step.
+ */
+const OTHER_GUARDED = [
+  { base: '/my', roles: ['tourist'] },
+  { base: '/profile', roles: ['tourist', 'officer', 'admin', 'authority'] },
+];
+
+/**
+ * Whether a user with `role` may open `path`. False only for a role-guarded area
+ * the role is not allowed into; public paths are always open.
+ */
+export function canOpen(path, role) {
+  const pathname = path.split(/[?#]/)[0];
+  const area = [...Object.values(DASHBOARDS), ...OTHER_GUARDED].find(
+    (a) => pathname === a.base || pathname.startsWith(`${a.base}/`)
+  );
+  return !area || area.roles.includes(role);
+}
+
+/** The signed-in user's own area: their dashboard, or `/my` for a tourist. */
+export const homeFor = (role) => dashboardBase(role) ?? (role === 'tourist' ? '/my' : '/');
