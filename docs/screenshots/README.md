@@ -1,7 +1,14 @@
 # Screenshots
 
-UI captures of the running Mountain-Able frontend (React + Vite) against the
+UI captures of the running Mountain Reach frontend (React + Vite) against the
 seeded backend, taken in one batch so the data is consistent across every shot.
+
+> **These captures predate the rename.** The platform was called "Mountain-Able"
+> when they were taken, so the header wordmark, the dashboard sidebar, the footer
+> and some page text in the images still show that name. The code now says
+> "Mountain Reach". The Master's programme keeps the name "Mountain-Able", which
+> is why the footer's programme line is correct either way. Recapture before
+> submission if the images must match the running app.
 
 Desktop is **1440 × 900** and mobile **375 × 812**, both at `deviceScaleFactor:
 2` — so the files are 2880 px and 750 px wide respectively. Each capture waits

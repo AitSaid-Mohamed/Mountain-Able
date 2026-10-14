@@ -22,8 +22,8 @@
  *
  * Usage:
  *   npm run warm-cache                                  (local, server running)
- *   npm run warm-cache -- https://mountain-able-api.onrender.com
- *   API_URL=https://mountain-able-api.onrender.com/api npm run warm-cache
+ *   npm run warm-cache -- https://mountain-reach-api.onrender.com
+ *   API_URL=https://mountain-reach-api.onrender.com/api npm run warm-cache
  *
  * The caches live in the *server's* memory, so this must be pointed at whichever
  * server the demonstration will use. Warming localhost changes nothing about a

@@ -1,4 +1,4 @@
-# Security — Mountain-Able
+# Security — Mountain Reach
 
 This document records the security posture of the platform: the threat model, the
 defence layers and what each protects against, the specific defects a dedicated
@@ -8,7 +8,7 @@ security chapter of the project report.
 
 ## 1. Threat model
 
-Mountain-Able is a public web application with four privilege tiers (tourist,
+Mountain Reach is a public web application with four privilege tiers (tourist,
 municipality officer, administrator, regional authority) backed by a REST API
 and MongoDB. The assets worth protecting are: user accounts and credentials;
 the integrity of published tourism content and its community ratings; the

@@ -7,7 +7,7 @@ import { body } from 'express-validator';
 const COMMON = new Set([
   'password', 'password1', 'password123', '12345678', '123456789', '1234567890',
   'qwertyuiop', 'iloveyou', 'letmein123', 'welcome1', 'admin123', 'changeme',
-  'mountainable', 'password!', 'passw0rd', 'qwerty123',
+  'mountainable', 'mountainreach', 'password!', 'passw0rd', 'qwerty123',
 ]);
 
 /**

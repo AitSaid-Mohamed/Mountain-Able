@@ -33,11 +33,11 @@ Coordination runs from scene 6 through scene 8, about 5 minutes 10 seconds of th
 
 **SAY**
 
-> This is Mountain-Able, my project work for the Master in Programming and Planning for Sustainable Mountain Development at the Politecnico di Milano.
+> This is Mountain Reach, my project work for the Master in Programming and Planning for Sustainable Mountain Development at the Politecnico di Milano.
 >
 > Small Italian mountain municipalities have a visibility problem. Their tourism information is scattered, out of date, or missing. A comune of a few hundred people cannot keep its own website running. And a visitor who has never heard of the village will never find it.
 >
-> Mountain-Able gives these municipalities one shared place to publish. It gives visitors one place to discover them.
+> Mountain Reach gives these municipalities one shared place to publish. It gives visitors one place to discover them.
 >
 > The project has two axes. The first is the visitor: discovery, journey planning and reviews. The second is the municipalities themselves, and how they can work together. I will spend most of this video on the second, because it is the newer idea.
 >
@@ -303,7 +303,7 @@ Coordination runs from scene 6 through scene 8, about 5 minutes 10 seconds of th
 
 > To sum up.
 >
-> For visitors, Mountain-Able makes small mountain villages findable. It helps people plan a realistic journey to them. And it keeps reviews trustworthy through moderation.
+> For visitors, Mountain Reach makes small mountain villages findable. It helps people plan a realistic journey to them. And it keeps reviews trustworthy through moderation.
 >
 > For municipalities, it lets them declare what they can offer, ask their neighbours for what they lack, and record the outcome. Over time, that record becomes evidence of what is missing, and where.
 >

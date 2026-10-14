@@ -20,7 +20,7 @@ const OVERPASS_ENDPOINTS = [
 ];
 const OVERPASS_TIMEOUT_MS = 20000;
 const NOMINATIM = 'https://nominatim.openstreetmap.org/search';
-const UA = 'MountainAble/1.0 (Politecnico di Milano student project)';
+const UA = 'MountainReach/1.0 (Politecnico di Milano student project)';
 
 /** POI category definitions — drive both the Overpass query and classification. */
 export const POI_DEFS = [

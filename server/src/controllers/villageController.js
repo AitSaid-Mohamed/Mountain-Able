@@ -189,7 +189,7 @@ export const uploadVillageImages = catchAsync(async (req, res, next) => {
   // handed to the storage provider. Returns Cloudinary URLs when configured and
   // `/uploads/...` paths otherwise; the client renders both, because `mediaUrl`
   // passes absolute URLs through untouched.
-  const paths = await storeImages(req.files, 'mountain-able/villages');
+  const paths = await storeImages(req.files, 'mountain-reach/villages');
   const village = await Village.findByIdAndUpdate(
     req.village._id,
     { $push: { images: { $each: paths } }, ...(req.village.coverImage ? {} : { coverImage: paths[0] }) },

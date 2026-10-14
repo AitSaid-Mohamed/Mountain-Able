@@ -1,5 +1,5 @@
 /**
- * Tailwind design system for the Mountain-Able platform.
+ * Tailwind design system for the Mountain Reach platform.
  * Tokens are derived from the project Figma file (1440px design canvas).
  * @type {import('tailwindcss').Config}
  */

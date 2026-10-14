@@ -86,7 +86,7 @@ export default function Footer() {
       <div className="border-t border-white/20">
         <Container className="flex flex-col items-center justify-between gap-2 py-5 text-small text-white/70 sm:flex-row">
           <span>
-            © {year} Mountain-Able. {t('footer.rights')}
+            © {year} Mountain Reach. {t('footer.rights')}
           </span>
           <span>Politecnico di Milano — Master Mountain-Able</span>
         </Container>

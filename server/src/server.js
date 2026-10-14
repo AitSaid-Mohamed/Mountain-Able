@@ -13,7 +13,7 @@ async function start() {
     // traffic to the container's own address, so a server listening only on
     // localhost is unreachable from outside and the health check never passes.
     app.listen(config.port, '0.0.0.0', () => {
-      console.log(`🚀 Mountain-Able API running on port ${config.port} (${config.nodeEnv})`);
+      console.log(`🚀 Mountain Reach API running on port ${config.port} (${config.nodeEnv})`);
       console.log(`   Allowed origins: ${config.clientOrigins.join(', ')}`);
     });
   } catch (err) {

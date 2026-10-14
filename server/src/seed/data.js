@@ -1,5 +1,5 @@
 /**
- * Hand-authored seed dataset for the Mountain-Able platform.
+ * Hand-authored seed dataset for the Mountain Reach platform.
  *
  * All villages are real Italian mountain villages ("borghi") with genuine
  * regions, provinces and approximate real latitude/longitude coordinates.

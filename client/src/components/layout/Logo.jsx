@@ -9,11 +9,11 @@ export default function Logo({ to = '/', className, tone = 'primary' }) {
     <Link
       to={to}
       className={cn('inline-flex items-center gap-2 font-semibold', color, className)}
-      aria-label="Mountain-Able home"
+      aria-label="Mountain Reach home"
     >
       <Mountain size={28} aria-hidden="true" />
       <span className={cn('text-h3', tone === 'white' ? 'text-white' : 'text-ink')}>
-        Mountain-<span className={color}>Able</span>
+        Mountain <span className={color}>Reach</span>
       </span>
     </Link>
   );

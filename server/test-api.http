@@ -1,5 +1,5 @@
 ########################################################################
-# Mountain-Able API — manual test collection (VS Code "REST Client")
+# Mountain Reach API — manual test collection (VS Code "REST Client")
 # ---------------------------------------------------------------------
 # 1. Start MongoDB, then: npm run seed && npm run dev
 # 2. Install the "REST Client" extension (humao.rest-client)

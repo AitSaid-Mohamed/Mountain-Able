@@ -1,4 +1,4 @@
-# Mountain-Able — Digital Platform for Enhancing Tourism in Italian Mountain Villages
+# Mountain Reach — Digital Platform for Enhancing Tourism in Italian Mountain Villages
 
 Master's project — **Politecnico di Milano**, Master *"Mountain-Able"* (supervisor: Prof. Corradi).
 

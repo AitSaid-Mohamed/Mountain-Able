@@ -15,7 +15,7 @@ const MAX_ATTEMPTS = 5;
 const LOCK_MS = 15 * 60 * 1000; // 15 minutes
 // A bcrypt hash to compare against when the email is unknown, so a missing user
 // costs the same time as a wrong password (defeats timing-based enumeration).
-const DUMMY_HASH = bcrypt.hashSync('mountain-able-dummy-password', 12);
+const DUMMY_HASH = bcrypt.hashSync('mountain-reach-dummy-password', 12);
 
 /**
  * POST /api/auth/register
@@ -121,7 +121,7 @@ export const updateMe = catchAsync(async (req, res) => {
   // A newly uploaded avatar image (multipart) wins over any avatar text field,
   // and goes to the same store as village images — Cloudinary when configured,
   // local disk otherwise.
-  if (req.file) updates.avatar = await storeImage(req.file, 'mountain-able/avatars');
+  if (req.file) updates.avatar = await storeImage(req.file, 'mountain-reach/avatars');
 
   const user = await User.findByIdAndUpdate(req.user.id, updates, {
     new: true,

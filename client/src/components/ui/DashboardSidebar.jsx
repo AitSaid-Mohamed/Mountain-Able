@@ -29,7 +29,7 @@ export default function DashboardSidebar({
             collapsed ? 'h-11 w-11 text-lg' : 'h-[50px] w-[268px] max-w-full text-[24px]'
           )}
         >
-          {collapsed ? 'M' : 'Mountain-Able'}
+          {collapsed ? 'M' : 'Mountain Reach'}
         </div>
       </div>
       <div className="mx-4 border-t border-white/30" />

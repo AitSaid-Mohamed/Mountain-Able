@@ -1,4 +1,4 @@
-# Mountain-Able — Full Project Report
+# Mountain Reach — Full Project Report
 
 ### A Digital Platform for Enhancing Tourism in Italian Mountain Villages, and for Coordination Between the Municipalities That Maintain It
 
@@ -65,7 +65,7 @@ discover — a feedback loop that accelerates decline.
 
 ### 1.2 What this project claims, and what it does not
 
-The Mountain-Able platform addresses one specific, tractable link in this chain:
+The Mountain Reach platform addresses one specific, tractable link in this chain:
 **visibility and trustworthy information**. It does not attempt to solve
 depopulation, and it should not be read as claiming to. Depopulation is a
 structural economic and demographic problem requiring policy instruments far
@@ -140,7 +140,7 @@ which services their territory persistently lacks.
 A **shared platform with a common data model, a low technical barrier to entry for
 municipalities, a moderation layer that keeps the aggregated information
 trustworthy, and a channel between neighbouring administrations**. This is
-precisely the scope Mountain-Able implements: a common `Village` schema every
+precisely the scope Mountain Reach implements: a common `Village` schema every
 municipality populates through the same interface; an officer role that requires no
 technical skill beyond filling in a web form; an administrative role that validates
 content and moderates community contributions; and a capability registry through
@@ -152,7 +152,7 @@ which municipalities can find and ask one another.
 
 ### 3.1 Composition
 
-Mountain-Able is a full-stack web application composed of two deployable units held
+Mountain Reach is a full-stack web application composed of two deployable units held
 in one repository:
 
 - a **REST API** (`server/`) built with Node.js, Express and MongoDB via Mongoose,
@@ -1086,7 +1086,7 @@ This section summarises `docs/security.md`, which holds the full audit record.
 
 ### 8.1 Threat model
 
-Mountain-Able is a public web application with four privilege tiers backed by a REST API and MongoDB. The assets worth protecting are: user accounts and credentials; the integrity of published tourism content and its community ratings; the privacy of users' personal and self-declared data; and the availability of the service and of the third-party services it proxies.
+Mountain Reach is a public web application with four privilege tiers backed by a REST API and MongoDB. The assets worth protecting are: user accounts and credentials; the integrity of published tourism content and its community ratings; the privacy of users' personal and self-declared data; and the availability of the service and of the third-party services it proxies.
 
 The adversaries considered are unauthenticated internet clients; authenticated users attempting to exceed their privileges (a tourist acting as an admin, an officer editing another municipality's village); and automated abuse (credential stuffing, denial of service, injection). Physical and infrastructure-level attacks are out of scope for a project running on a single host.
 

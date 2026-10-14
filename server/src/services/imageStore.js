@@ -54,7 +54,7 @@ function ensureConfigured() {
  * @param {string} folder  Cloudinary folder, ignored by the local backend
  * @returns {Promise<string>} an absolute HTTPS URL, or a `/uploads/...` path
  */
-export async function storeImage(file, folder = 'mountain-able') {
+export async function storeImage(file, folder = 'mountain-reach') {
   if (!usingCloudinary()) return `/uploads/${file.filename}`;
 
   ensureConfigured();

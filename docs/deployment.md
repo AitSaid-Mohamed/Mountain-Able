@@ -1,6 +1,6 @@
 # Deployment guide
 
-Deploying Mountain-Able to **MongoDB Atlas** (database), **Render** (API) and
+Deploying Mountain Reach to **MongoDB Atlas** (database), **Render** (API) and
 **Vercel** (client).
 
 `README.md` covers running the project locally; this document covers putting it
@@ -36,7 +36,7 @@ save time when something looks wrong:
 2. **Build a Database → M0 (Free)**. Choose a region close to your Render region
    — Frankfurt or Ireland if you deploy the API in the EU. Cross-continent
    latency on every query is noticeable and avoidable.
-3. Name the cluster (for example `mountain-able`).
+3. Name the cluster (for example `mountain-reach`).
 
 ### 1.2 Create a database user
 
@@ -135,7 +135,7 @@ Two warnings about this step:
 
 | Setting | Value |
 |---|---|
-| Name | `mountain-able-api` |
+| Name | `mountain-reach-api` |
 | Region | the same region as your Atlas cluster |
 | Root Directory | `server` |
 | Runtime | Node |
@@ -177,14 +177,14 @@ assuming anything else is wrong — the message says exactly this.
 Render deploys on save. When the log shows:
 
 ```
-🚀 Mountain-Able API running on port 10000 (production)
+🚀 Mountain Reach API running on port 10000 (production)
    Allowed origins: http://localhost:5173
 ```
 
 check the health endpoint:
 
 ```bash
-curl https://mountain-able-api.onrender.com/api/health
+curl https://mountain-reach-api.onrender.com/api/health
 ```
 
 Expected:
@@ -199,7 +199,7 @@ URI, the database user or the network allow-list is wrong.
 Then confirm the seeded data is visible:
 
 ```bash
-curl "https://mountain-able-api.onrender.com/api/villages?limit=2"
+curl "https://mountain-reach-api.onrender.com/api/villages?limit=2"
 ```
 
 If this returns `"total":0`, the database name is missing from the URI (§1.4).
@@ -238,7 +238,7 @@ Again, **Root Directory must be `client`**.
 
 | Key | Value | Environments |
 |---|---|---|
-| `VITE_API_URL` | `https://mountain-able-api.onrender.com/api` | Production, Preview, Development |
+| `VITE_API_URL` | `https://mountain-reach-api.onrender.com/api` | Production, Preview, Development |
 
 Two things about this that catch people out:
 
@@ -251,7 +251,7 @@ Two things about this that catch people out:
 ### 3.3 Deploy
 
 Deploy, and note the URL Vercel assigns (for example
-`https://mountain-able.vercel.app`).
+`https://mountain-reach.vercel.app`).
 
 The site will load and then fail to fetch anything. That is expected: the API
 does not yet allow this origin. Fix it next.
@@ -261,14 +261,14 @@ does not yet allow this origin. Fix it next.
 Return to Render → Environment, and set:
 
 ```
-CLIENT_ORIGIN=https://mountain-able.vercel.app
+CLIENT_ORIGIN=https://mountain-reach.vercel.app
 ```
 
 To keep local development working against the deployed API at the same time, use
 the list form:
 
 ```
-CLIENT_ORIGIN=https://mountain-able.vercel.app,http://localhost:5173
+CLIENT_ORIGIN=https://mountain-reach.vercel.app,http://localhost:5173
 ```
 
 Rules for this value:
@@ -357,7 +357,7 @@ so they must be warmed against the server you will actually demonstrate.
 
 ```bash
 cd server
-npm run warm-cache -- https://mountain-able-api.onrender.com
+npm run warm-cache -- https://mountain-reach-api.onrender.com
 ```
 
 The `/api` suffix is added automatically; passing it explicitly also works, as

@@ -1,9 +1,9 @@
-# Mountain-Able — Project Report
+# Mountain Reach — Project Report
 ### A Digital Platform for Enhancing Tourism in Italian Mountain Villages
 
 *Master's project work — Politecnico di Milano, Master "Mountain-Able" (supervisor: Prof. Corradi).*
 
-This report documents the design and implementation of the Mountain-Able platform as it exists in the repository. Every capability, endpoint and constraint described here is derived from the source code (route definitions, middleware guards, Mongoose schemas and frontend route configuration). Where a feature was proposed but not implemented, this is stated explicitly rather than presented as complete.
+This report documents the design and implementation of the Mountain Reach platform as it exists in the repository. Every capability, endpoint and constraint described here is derived from the source code (route definitions, middleware guards, Mongoose schemas and frontend route configuration). Where a feature was proposed but not implemented, this is stated explicitly rather than presented as complete.
 
 ---
 
@@ -35,7 +35,7 @@ Italy's tourism economy is heavily concentrated in a small number of well-known 
 
 The consequences of this imbalance are well documented and mutually reinforcing. Concentrated tourism produces congestion, rising living costs and cultural erosion in the major destinations, while the mountain interior suffers the opposite problem: economic marginalisation, ageing populations and progressive depopulation. As younger residents leave in search of opportunity, the local economy contracts, services close, and the villages become still harder to discover — a feedback loop that accelerates decline.
 
-The Mountain-Able platform addresses one specific, tractable link in this chain: **visibility and trustworthy information**. It does not attempt to solve depopulation directly, nor does it replace the broader policy instruments that such a problem requires. Instead it provides the digital infrastructure that small municipalities lack — a single, maintained, searchable place where a mountain village can present itself, and where a traveller can find it.
+The Mountain Reach platform addresses one specific, tractable link in this chain: **visibility and trustworthy information**. It does not attempt to solve depopulation directly, nor does it replace the broader policy instruments that such a problem requires. Instead it provides the digital infrastructure that small municipalities lack — a single, maintained, searchable place where a mountain village can present itself, and where a traveller can find it.
 
 The objectives of the project are therefore:
 
@@ -57,13 +57,13 @@ Framed technically, the underlying problem is one of **data fragmentation and ab
 
 The direct consequences follow from these conditions. Travellers cannot reliably find or compare mountain villages, so they default to the destinations that are already well served online. The absence of a feedback channel means municipalities receive no structured signal about what visitors value. Regional bodies, responsible for territorial development, have no consolidated dataset from which to reason about where tourism engagement is growing or lagging.
 
-The resulting need is a **shared platform with a common data model, a low technical barrier to entry for municipalities, and a moderation layer that keeps the aggregated information trustworthy**. This is precisely the scope Mountain-Able implements: a common `Village` schema every municipality populates through the same interface; an officer role that requires no technical skill beyond filling in a web form; and an administrative role that validates content and moderates community contributions.
+The resulting need is a **shared platform with a common data model, a low technical barrier to entry for municipalities, and a moderation layer that keeps the aggregated information trustworthy**. This is precisely the scope Mountain Reach implements: a common `Village` schema every municipality populates through the same interface; an officer role that requires no technical skill beyond filling in a web form; and an administrative role that validates content and moderates community contributions.
 
 ---
 
 ## 3. System overview
 
-Mountain-Able is a full-stack web application composed of two deployable units held in one repository:
+Mountain Reach is a full-stack web application composed of two deployable units held in one repository:
 
 - a **REST API** (`server/`) built with Node.js, Express and MongoDB (via Mongoose), using JSON Web Tokens for authentication; and
 - a **single-page frontend** (`client/`) built with React, Vite and Tailwind CSS.

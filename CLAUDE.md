@@ -1,4 +1,4 @@
-# Mountain-Able — Digital Tourism Platform
+# Mountain Reach — Digital Tourism Platform
 
 Master's project work — Politecnico di Milano, Master "Mountain-Able" (Programming and Planning for Sustainable Mountain Development), 2025/2026. Supervised by Prof. Corradi. The code and its documentation are both graded deliverables.
 

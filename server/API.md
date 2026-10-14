@@ -1,4 +1,4 @@
-# Mountain-Able REST API
+# Mountain Reach REST API
 
 Base URL: `http://localhost:5000/api`
 
